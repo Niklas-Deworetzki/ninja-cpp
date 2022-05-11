@@ -39,20 +39,23 @@ int main(int argc, char *argv[]) {
         return 0; // Interrupt execution.
     }
 
+    using namespace NJVM;
+
     if (config.requested_list) {
-        for (const auto &instruction: NJVM::program) {
+        for (const auto &instruction: program) {
             NJVM::print_instruction(instruction);
         }
 
     } else {
-        std::cout << NJVM::MESSAGE_START << std::endl;
+        std::cout << MESSAGE_START << std::endl;
 
+        instruction_t instruction;
         do {
-            const instruction_t instruction = NJVM::program.at(NJVM::pc); // Fetch instruction.
-            NJVM::pc++;                                                   // Increment pc.
-        } while (NJVM::exec_instruction(instruction));                    // Execute instruction.
+            instruction = program.at(pc);        // Fetch instruction.
+            pc++;                                // Increment pc.
+        } while (exec_instruction(instruction)); // Execute instruction.
 
-        std::cout << NJVM::MESSAGE_STOP << std::endl;
+        std::cout << MESSAGE_STOP << std::endl;
     }
 
     return 0;
