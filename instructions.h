@@ -13,6 +13,8 @@ namespace NJVM {
 
     [[nodiscard]] const instruction_info_t &info_for_opcode(opcode_t opcode);
 
+    [[nodiscard]] constexpr opcode_t opcode_for(const char *name);
+
 
     [[nodiscard]] constexpr opcode_t get_opcode(instruction_t instruction);
 
@@ -21,9 +23,6 @@ namespace NJVM {
 
     void print_instruction(instruction_t instruction);
 
-    void exec_instruction(instruction_t instruction);
-
-
-    [[nodiscard]] constexpr opcode_t opcode_for(const char *name);
+    bool exec_instruction(instruction_t instruction);
 
 }

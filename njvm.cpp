@@ -11,8 +11,10 @@ namespace NJVM {
     const char *MESSAGE_START = "Ninja Virtual Machine started";
     const char *MESSAGE_STOP = "Ninja Virtual Machine stopped";
 
-    std::vector<instruction_t> program{};
-
+    std::vector<instruction_t> program;
+    std::vector<ninja_int_t> stack;
+    int32_t pc = 0;
+    int32_t sp = 0;
 }
 
 struct cli_config {
@@ -44,6 +46,12 @@ int main(int argc, char *argv[]) {
 
     } else {
         std::cout << NJVM::MESSAGE_START << std::endl;
+
+        do {
+            const instruction_t instruction = NJVM::program.at(NJVM::pc); // Fetch instruction.
+            NJVM::pc++;                                                   // Increment pc.
+        } while (NJVM::exec_instruction(instruction));                    // Execute instruction.
+
         std::cout << NJVM::MESSAGE_STOP << std::endl;
     }
 

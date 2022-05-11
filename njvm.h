@@ -2,6 +2,7 @@
 #pragma once
 
 #include <vector>
+#include <stack>
 
 namespace NJVM {
 
@@ -15,6 +16,9 @@ namespace NJVM {
     typedef int32_t ninja_int_t;
 
     extern std::vector<instruction_t> program;
+    extern std::vector<ninja_int_t> stack;
+
+    extern int32_t pc, sp;
 
 }
 

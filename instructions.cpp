@@ -47,19 +47,6 @@ namespace NJVM {
         return intermediate;
     }
 
-    void print_instruction(instruction_t instruction) {
-        const instruction_info_t &info = info_for_opcode(get_opcode(instruction));
-        std::cout << info.name;
-        if (info.requires_operand) {
-            std::cout << " " << get_opcode(instruction);
-        }
-        std::cout << std::endl;
-    }
-
-    void exec_instruction(instruction_t instruction) {
-        // TODO
-    }
-
 
     // constexpr function to check if two strings are equal.
     static constexpr bool strequals(const char *s1, const char *s2) {
@@ -76,6 +63,67 @@ namespace NJVM {
             }
         }
         throw std::invalid_argument("Unknown instruction mnemonic.");
+    }
+
+
+    void print_instruction(instruction_t instruction) {
+        const instruction_info_t &info = info_for_opcode(get_opcode(instruction));
+        std::cout << info.name;
+        if (info.requires_operand) {
+            std::cout << " " << get_opcode(instruction);
+        }
+        std::cout << std::endl;
+    }
+
+
+#define DO_ARITHMETIC(op) {                            \
+    stack[sp - 1] = stack.at(sp - 2) op stack[sp - 1]; \
+    sp--;                                              \
+}
+
+    bool exec_instruction(instruction_t instruction) {
+        switch (get_opcode(instruction)) {
+            case opcode_for("halt"):
+                return false;
+
+            case opcode_for("pushc"):
+                stack.at(sp++) = get_immediate(instruction);
+                break;
+
+            case opcode_for("add"): DO_ARITHMETIC(+)
+                break;
+
+            case opcode_for("sub"): DO_ARITHMETIC(-)
+                break;
+
+            case opcode_for("mul"): DO_ARITHMETIC(*)
+                break;
+
+            case opcode_for("div"): DO_ARITHMETIC(/)
+                break;
+
+            case opcode_for("mod"): DO_ARITHMETIC(%)
+                break;
+
+
+            case opcode_for("rdint"):
+                std::cin >> stack.at(sp++);
+                break;
+
+            case opcode_for("wrint"):
+                std::cout << stack.at(--sp) << std::endl;
+                break;
+
+            case opcode_for("rdchr"):
+                std::cin >> reinterpret_cast<char &>(stack.at(sp++));
+                break;
+
+            case opcode_for("wrchr"):
+                std::cout << static_cast<char>(stack.at(--sp));
+                break;
+
+        }
+        return true;
     }
 }
 
