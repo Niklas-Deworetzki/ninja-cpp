@@ -4,4 +4,4 @@ project(ninja_cpp)
 set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-Wall -pedantic)
 
-add_executable(ninja_cpp njvm.cpp njvm.h)
+add_executable(ninja_cpp njvm.cpp njvm.h instructions.h instructions.cpp)

@@ -3,6 +3,40 @@
 #include <cstring>
 
 #include "njvm.h"
+#include "instructions.h"
+
+namespace NJVM {
+    const char *MESSAGE_START = "Ninja Virtual Machine started";
+    const char *MESSAGE_STOP = "Ninja Virtual Machine stopped";
+
+    std::vector<instruction_t> program{};
+
+}
+
+struct cli_config {
+    bool requested_version = false;
+    bool requested_help = false;
+    bool requested_list = false;
+};
+
+static cli_config parse_arguments(int argc, char *argv[]);
+
+int main(int argc, char *argv[]) {
+    cli_config config = parse_arguments(argc, argv);
+
+    if (config.requested_list) {
+        for (const auto &instruction: NJVM::program) {
+            NJVM::print_instruction(instruction);
+        }
+
+    } else {
+        std::cout << NJVM::MESSAGE_START << std::endl;
+        std::cout << NJVM::MESSAGE_STOP << std::endl;
+    }
+
+    return 0;
+}
+
 
 /**
  * A function used to check whether a C-style string matches a set of other
@@ -14,12 +48,6 @@ static bool matches(const char *arg, std::initializer_list<const char *> potenti
         return strcmp(arg, element) == 0;
     });
 }
-
-
-struct cli_config {
-    bool requested_version = false;
-    bool requested_help = false;
-};
 
 static cli_config parse_arguments(int argc, char *argv[]) {
     cli_config config{};
@@ -35,6 +63,9 @@ static cli_config parse_arguments(int argc, char *argv[]) {
             } else if (matches(arg, {"--help", "-h"})) {
                 config.requested_help = true;
 
+            } else if (matches(arg, {"--list"})) {
+                config.requested_list = true;
+
             } else if (matches(arg, {"--"})) {
                 encountered_separator = true;
 
@@ -48,13 +79,4 @@ static cli_config parse_arguments(int argc, char *argv[]) {
             // Filename.
         }
     }
-}
-
-int main(int argc, char *argv[]) {
-    cli_config config = parse_arguments(argc, argv);
-
-    std::cout << NJVM::MESSAGE_START << std::endl;
-    std::cout << NJVM::MESSAGE_STOP << std::endl;
-
-    return 0;
 }
