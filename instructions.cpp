@@ -5,7 +5,7 @@
 #include "instructions.h"
 
 namespace NJVM {
-    static const instruction_info_t INSTRUCTION_DATA[] = {
+    static constexpr instruction_info_t INSTRUCTION_DATA[] = {
             {"halt",  false},
 
             {"pushc", true},
@@ -70,8 +70,8 @@ namespace NJVM {
     }
 
     [[nodiscard]] constexpr opcode_t opcode_for(const char *name) {
-        for (opcode_t opcode = 0; opcode < max_opcode; opcode++) {
-            if (strequals(name, info_for_opcode(opcode).name)) {
+        for (opcode_t opcode = 0; opcode <= max_opcode; opcode++) {
+            if (strequals(name, INSTRUCTION_DATA[opcode].name)) {
                 return opcode;
             }
         }
