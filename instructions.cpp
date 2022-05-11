@@ -41,6 +41,7 @@ namespace NJVM {
     [[nodiscard]] constexpr immediate_t get_immediate(instruction_t instruction) {
         auto intermediate = static_cast<immediate_t>(instruction & 0x00FFFFFF);
         if (intermediate & 0x00800000) {
+            // If original immediate was negative, fill remaining bits to extend sign.
             intermediate |= (0xFF << 24);
         }
         return intermediate;
@@ -60,12 +61,12 @@ namespace NJVM {
     }
 
 
+    // constexpr function to check if two strings are equal.
     static constexpr bool strequals(const char *s1, const char *s2) {
-        size_t offset = 0;
-        do {
-            if (s1[offset] != s2[offset]) return false;
-        } while (s1[offset++] != '\0');
-        return true;
+        for (size_t offset = 0; s1[offset] == s2[offset]; offset++) {
+            if (s1[offset] == '\0') return true;
+        }
+        return false;
     }
 
     [[nodiscard]] constexpr opcode_t opcode_for(const char *name) {

@@ -5,6 +5,8 @@
 #include "njvm.h"
 #include "instructions.h"
 
+#define VERSION 1.0
+
 namespace NJVM {
     const char *MESSAGE_START = "Ninja Virtual Machine started";
     const char *MESSAGE_STOP = "Ninja Virtual Machine stopped";
@@ -23,6 +25,17 @@ static cli_config parse_arguments(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
     cli_config config = parse_arguments(argc, argv);
+
+    if (config.requested_version || config.requested_help) {
+        std::cout << "NJVM version " << VERSION << " (" << __DATE__ << ")" << std::endl;
+        std::cout << "(C) Niklas Deworetzki" << std::endl;
+    }
+    if (config.requested_help) {
+        // TODO
+    }
+    if (config.requested_help || config.requested_version) {
+        return 0; // Interrupt execution.
+    }
 
     if (config.requested_list) {
         for (const auto &instruction: NJVM::program) {
@@ -78,5 +91,7 @@ static cli_config parse_arguments(int argc, char *argv[]) {
         } else {
             // Filename.
         }
+
+        return config;
     }
 }
