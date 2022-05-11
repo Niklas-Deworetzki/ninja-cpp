@@ -92,6 +92,6 @@ static cli_config parse_arguments(int argc, char *argv[]) {
             // Filename.
         }
 
-        return config;
     }
+    return config;
 }
