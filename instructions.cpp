@@ -27,7 +27,7 @@ namespace NJVM {
     [[nodiscard]] const instruction_info_t &info_for_opcode(opcode_t opcode) {
         if (opcode > max_opcode) {
             std::stringstream explanation;
-            explanation << "Invalid opcode " << opcode << " is out of range.";
+            explanation << "Invalid opcode " << static_cast<int32_t>(opcode) << " is out of range.";
             throw std::invalid_argument(explanation.str());
         }
         return INSTRUCTION_DATA[opcode];
