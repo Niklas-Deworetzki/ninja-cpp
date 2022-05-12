@@ -77,7 +77,7 @@ namespace NJVM {
 
 
 #define DO_ARITHMETIC(op) {                            \
-    stack[sp - 1] = stack.at(sp - 2) op stack[sp - 1]; \
+    stack.at(sp - 2) = stack[sp - 2] op stack[sp - 1]; \
     sp--;                                              \
 }
 
