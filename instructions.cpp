@@ -20,6 +20,14 @@ namespace NJVM {
             {"wrint", false},
             {"rdchr", false},
             {"wrchr", false},
+
+            {"pushg", true},
+            {"popg",  true},
+
+            {"asf",   true},
+            {"rsf",   false},
+            {"pushl", true},
+            {"popl",  true},
     };
     static constexpr opcode_t max_opcode = (sizeof(INSTRUCTION_DATA) / sizeof(instruction_info_t)) - 1;
 
@@ -111,7 +119,7 @@ namespace NJVM {
                 break;
 
             case opcode_for("wrint"):
-                std::cout << stack.at(--sp) << std::endl;
+                std::cout << stack.at(--sp);
                 break;
 
             case opcode_for("rdchr"):
@@ -122,6 +130,38 @@ namespace NJVM {
                 std::cout << static_cast<char>(stack.at(--sp));
                 break;
 
+
+            case opcode_for("pushg"):
+                stack.at(sp++) = static_data.at(get_immediate(instruction));
+                break;
+
+            case opcode_for("popg"):
+                static_data.at(get_immediate(instruction)) = stack.at(--sp);
+                break;
+
+            case opcode_for("asf"): {
+                int32_t size = get_immediate(instruction);
+                if (size < 0) throw std::invalid_argument("Frame size can't be negative.");
+                if (sp + 1 + size > stack.size()) throw std::overflow_error("Unable to allocate stack frame.");
+
+                stack[sp++] = fp;
+                fp = sp;
+                sp += size;
+                break;
+            }
+
+            case opcode_for("rsf"):
+                sp = fp;
+                fp = stack.at(--sp);
+                break;
+
+            case opcode_for("pushl"):
+                stack.at(sp++) = stack.at(fp + get_immediate(instruction));
+                break;
+
+            case opcode_for("popl"):
+                stack.at(fp + get_immediate(instruction)) = stack.at(--sp);
+                break;
         }
         return true;
     }
