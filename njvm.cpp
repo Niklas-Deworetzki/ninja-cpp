@@ -5,16 +5,16 @@
 #include "njvm.h"
 #include "instructions.h"
 
-#define VERSION 1.0
-
 namespace NJVM {
     const char *MESSAGE_START = "Ninja Virtual Machine started";
     const char *MESSAGE_STOP = "Ninja Virtual Machine stopped";
 
     std::vector<instruction_t> program;
     std::vector<ninja_int_t> stack;
+    std::vector<ninja_int_t> static_data;
     int32_t pc = 0;
     int32_t sp = 0;
+    int32_t fp = 0;
 }
 
 struct cli_config {
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     cli_config config = parse_arguments(argc, argv);
 
     if (config.requested_version || config.requested_help) {
-        std::cout << "NJVM version " << VERSION << " (" << __DATE__ << ")" << std::endl;
+        std::cout << "NJVM version " << NJVM::version << " (" << __DATE__ << ")" << std::endl;
         std::cout << "(C) Niklas Deworetzki" << std::endl;
     }
     if (config.requested_help) {
