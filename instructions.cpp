@@ -70,7 +70,7 @@ namespace NJVM {
         const instruction_info_t &info = info_for_opcode(get_opcode(instruction));
         std::cout << info.name;
         if (info.requires_operand) {
-            std::cout << " " << get_opcode(instruction);
+            std::cout << " " << get_immediate(instruction);
         }
         std::cout << std::endl;
     }
