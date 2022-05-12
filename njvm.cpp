@@ -4,6 +4,7 @@
 
 #include "njvm.h"
 #include "instructions.h"
+#include "loader.h"
 
 namespace NJVM {
     const char *MESSAGE_START = "Ninja Virtual Machine started";
@@ -21,6 +22,8 @@ struct cli_config {
     bool requested_version = false;
     bool requested_help = false;
     bool requested_list = false;
+    size_t stack_size = 10000;
+    char *input_file = nullptr;
 };
 
 static cli_config parse_arguments(int argc, char *argv[]);
@@ -28,9 +31,14 @@ static cli_config parse_arguments(int argc, char *argv[]);
 int main(int argc, char *argv[]) {
     cli_config config = parse_arguments(argc, argv);
 
+    if (config.input_file == nullptr) {
+        config.requested_help = true; // Input file is required.
+        std::cout << "No input file given!" << std::endl;
+    }
+
     if (config.requested_version || config.requested_help) {
-        std::cout << "NJVM version " << NJVM::version << " (" << __DATE__ << ")" << std::endl;
-        std::cout << "(C) Niklas Deworetzki" << std::endl;
+        std::cout << "NJVM version " << NJVM::version << " (build date " << __DATE__ << ") ";
+        std::cout << "Copyright Niklas Deworetzki" << std::endl;
     }
     if (config.requested_help) {
         // TODO
@@ -39,22 +47,25 @@ int main(int argc, char *argv[]) {
         return 0; // Interrupt execution.
     }
 
+    NJVM::load(config.input_file);
     using namespace NJVM;
 
     if (config.requested_list) {
         for (const auto &instruction: program) {
-            NJVM::print_instruction(instruction);
+            print_instruction(instruction);
         }
 
     } else {
+        stack.reserve(config.stack_size);
+
         std::cout << MESSAGE_START << std::endl;
-
-        instruction_t instruction;
-        do {
-            instruction = program.at(pc);        // Fetch instruction.
-            pc++;                                // Increment pc.
-        } while (exec_instruction(instruction)); // Execute instruction.
-
+        {
+            instruction_t instruction;
+            do {
+                instruction = program.at(pc);        // Fetch instruction.
+                pc++;                                // Increment pc.
+            } while (exec_instruction(instruction)); // Execute instruction.
+        }
         std::cout << MESSAGE_STOP << std::endl;
     }
 
@@ -78,7 +89,7 @@ static cli_config parse_arguments(int argc, char *argv[]) {
     bool encountered_separator = false;
 
     for (int i = 1 /* Skip program name */; i < argc; i++) {
-        const char *arg = argv[i];
+        char *arg = argv[i];
 
         if (arg[0] == '-' && !encountered_separator) {
             if (matches(arg, {"--version", "-v"})) {
@@ -94,13 +105,12 @@ static cli_config parse_arguments(int argc, char *argv[]) {
                 encountered_separator = true;
 
             } else {
-                std::string explanation;
-                explanation.append("Unknown argument `").append(arg).append("' encountered.");
-                throw std::invalid_argument(explanation);
+                throw std::invalid_argument(
+                        std::string("Unknown argument `").append(arg).append("' encountered."));
             }
 
         } else {
-            // Filename.
+            config.input_file = arg;
         }
 
     }
