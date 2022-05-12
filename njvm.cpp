@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
         }
 
     } else {
-        stack.reserve(config.stack_size);
+        stack = std::vector<ninja_int_t>(config.stack_size);
 
         std::cout << MESSAGE_START << std::endl;
         {
