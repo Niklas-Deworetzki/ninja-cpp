@@ -16,6 +16,7 @@ namespace NJVM {
     int32_t pc = 0;
     int32_t sp = 0;
     int32_t fp = 0;
+    ninja_int_t ret = 0;
 }
 
 struct cli_config {

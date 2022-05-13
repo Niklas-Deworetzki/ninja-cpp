@@ -6,15 +6,15 @@
 
 namespace NJVM {
     static constexpr instruction_info_t INSTRUCTION_DATA[] = {
-            {"halt",  false},
+            {"halt", false},
 
             {"pushc", true},
 
-            {"add",   false},
-            {"sub",   false},
-            {"mul",   false},
-            {"div",   false},
-            {"mod",   false},
+            {"add", false},
+            {"sub", false},
+            {"mul", false},
+            {"div", false},
+            {"mod", false},
 
             {"rdint", false},
             {"wrint", false},
@@ -22,23 +22,31 @@ namespace NJVM {
             {"wrchr", false},
 
             {"pushg", true},
-            {"popg",  true},
+            {"popg", true},
 
-            {"asf",   true},
-            {"rsf",   false},
+            {"asf", true},
+            {"rsf", false},
             {"pushl", true},
-            {"popl",  true},
+            {"popl", true},
 
-            {"eq",    false},
-            {"ne",    false},
-            {"lt",    false},
-            {"le",    false},
-            {"gt",    false},
-            {"ge",    false},
+            {"eq", false},
+            {"ne", false},
+            {"lt", false},
+            {"le", false},
+            {"gt", false},
+            {"ge", false},
 
-            {"jmp",   true},
-            {"brf",   true},
-            {"brt",   true},
+            {"jmp", true},
+            {"brf", true},
+            {"brt", true},
+
+            {"call", true},
+            {"ret", false},
+            {"drop", true},
+            {"pushr", false},
+            {"popr", false},
+
+            {"dup", false},
     };
     static constexpr opcode_t max_opcode = (sizeof(INSTRUCTION_DATA) / sizeof(instruction_info_t)) - 1;
 
@@ -210,6 +218,36 @@ namespace NJVM {
             case opcode_for("brt"):
                 if (stack[--sp] == 1) pc = get_immediate(instruction);
                 break;
+
+
+            case opcode_for("call"):
+                stack.at(sp++) = pc;
+                pc = get_immediate(instruction);
+                break;
+
+            case opcode_for("ret"):
+                pc = stack.at(--sp);
+                break;
+
+            case opcode_for("drop"):
+                sp -= get_immediate(instruction);
+                if (sp < 0) throw std::underflow_error("Not enough elements on the stack for drop.");
+                break;
+
+            case opcode_for("pushr"):
+                stack.at(sp++) = ret;
+                break;
+
+            case opcode_for("popr"):
+                ret = stack.at(--sp);
+                break;
+
+
+            case opcode_for("dup"):
+                stack.at(sp) = stack.at(sp - 1);
+                sp++;
+                break;
+
 
             default: {
                 std::stringstream ss;

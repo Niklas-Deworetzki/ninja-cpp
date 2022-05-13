@@ -6,7 +6,7 @@
 
 namespace NJVM {
 
-    constexpr uint32_t version = 3;
+    constexpr uint32_t version = 4;
 
     extern const char *MESSAGE_START, *MESSAGE_STOP;
 
@@ -20,6 +20,7 @@ namespace NJVM {
     extern std::vector<instruction_t> program;
     extern std::vector<ninja_int_t> stack, static_data;
     extern int32_t pc, sp, fp;
+    extern ninja_int_t ret;
 
 }
 
