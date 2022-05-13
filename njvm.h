@@ -6,7 +6,7 @@
 
 namespace NJVM {
 
-    constexpr uint32_t version = 2;
+    constexpr uint32_t version = 3;
 
     extern const char *MESSAGE_START, *MESSAGE_STOP;
 

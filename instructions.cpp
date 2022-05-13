@@ -28,6 +28,17 @@ namespace NJVM {
             {"rsf",   false},
             {"pushl", true},
             {"popl",  true},
+
+            {"eq",    false},
+            {"ne",    false},
+            {"lt",    false},
+            {"le",    false},
+            {"gt",    false},
+            {"ge",    false},
+
+            {"jmp",   true},
+            {"brf",   true},
+            {"brt",   true},
     };
     static constexpr opcode_t max_opcode = (sizeof(INSTRUCTION_DATA) / sizeof(instruction_info_t)) - 1;
 
@@ -35,7 +46,7 @@ namespace NJVM {
     [[nodiscard]] const instruction_info_t &info_for_opcode(opcode_t opcode) {
         if (opcode > max_opcode) {
             std::stringstream explanation;
-            explanation << "Invalid opcode " << static_cast<int32_t>(opcode) << " is out of range.";
+            explanation << "Invalid opcode " << static_cast<int>(opcode) << " is out of range.";
             throw std::invalid_argument(explanation.str());
         }
         return INSTRUCTION_DATA[opcode];
@@ -87,6 +98,11 @@ namespace NJVM {
 #define DO_ARITHMETIC(op) {                            \
     stack.at(sp - 2) = stack[sp - 2] op stack[sp - 1]; \
     sp--;                                              \
+}
+
+#define DO_COMPARISON(op) {                                      \
+    stack.at(sp - 2) = (stack[sp - 2] op stack[sp - 1]) ? 1 : 0; \
+    sp--;                                                        \
 }
 
     bool exec_instruction(instruction_t instruction) {
@@ -162,6 +178,45 @@ namespace NJVM {
             case opcode_for("popl"):
                 stack.at(fp + get_immediate(instruction)) = stack.at(--sp);
                 break;
+
+
+            case opcode_for("eq"): DO_COMPARISON(==)
+                break;
+
+            case opcode_for("ne"): DO_COMPARISON(!=)
+                break;
+
+            case opcode_for("lt"): DO_COMPARISON(<)
+                break;
+
+            case opcode_for("le"): DO_COMPARISON(<=)
+                break;
+
+            case opcode_for("gt"): DO_COMPARISON(>)
+                break;
+
+            case opcode_for("ge"): DO_COMPARISON(>=)
+                break;
+
+
+            case opcode_for("jmp"):
+                pc = get_immediate(instruction);
+                break;
+
+            case opcode_for("brf"):
+                if (stack[--sp] == 0) pc = get_immediate(instruction);
+                break;
+
+            case opcode_for("brt"):
+                if (stack[--sp] == 1) pc = get_immediate(instruction);
+                break;
+
+            default: {
+                std::stringstream ss;
+                ss << "Opcode " << static_cast<int>(get_opcode(instruction))
+                   << " does not reference a known instruction.";
+                throw std::invalid_argument(ss.str());
+            }
         }
         return true;
     }
