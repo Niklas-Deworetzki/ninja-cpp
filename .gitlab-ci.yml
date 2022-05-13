@@ -1,0 +1,16 @@
+image: gcc
+
+build:
+  stage: build
+  script:
+    - cmake .
+    - make
+  artifacts:
+    paths:
+      - njvm
+
+test:
+  stage: test
+  script:
+    - echo "Test would be running now."
+    - njvm
