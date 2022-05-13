@@ -4,7 +4,7 @@ project(ninja_cpp)
 set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-Wall -pedantic)
 
-add_executable(ninja
+add_executable(njvm
         njvm.cpp
         instructions.cpp
         loader.cpp)
