@@ -166,7 +166,8 @@ namespace NJVM {
             case opcode_for("asf"): {
                 int32_t size = get_immediate(instruction);
                 if (size < 0) throw std::invalid_argument("Frame size can't be negative.");
-                if (sp + 1 + size > stack.size()) throw std::overflow_error("Unable to allocate stack frame.");
+                if (static_cast<uint32_t>(sp + 1 + size) > stack.size())
+                    throw std::overflow_error("Unable to allocate stack frame.");
 
                 stack[sp++] = fp;
                 fp = sp;
