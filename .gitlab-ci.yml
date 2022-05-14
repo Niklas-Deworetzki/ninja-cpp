@@ -3,8 +3,7 @@ image: gcc
 build:
   stage: build
   script:
-    - cmake .
-    - make
+    - ./.gitlab/ci/build.sh
   artifacts:
     paths:
       - njvm
@@ -12,5 +11,4 @@ build:
 test:
   stage: test
   script:
-    - echo "Test would be running now."
-    - njvm
+    - ./.gitlab/ci/test.sh
