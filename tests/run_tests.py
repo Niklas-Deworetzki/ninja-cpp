@@ -36,10 +36,10 @@ def run_test(file, input_config):
     input_config = [str(line) for line in input_config]
     input_text = ' '.join(input_config)
 
-    refprocess = subprocess.Popen([path.join(directory, 'refnjvm'), file], stdin=subprocess.PIPE)
+    refprocess = subprocess.Popen([path.join(directory, 'refnjvm'), file], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     refresult = refprocess.communicate(input=input_text.encode('utf-8'))[0]
 
-    myprocess = subprocess.Popen(['./njvm', file], stdin=subprocess.PIPE)
+    myprocess = subprocess.Popen(['./njvm', file], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     myresult = myprocess.communicate(input=input_text.encode('utf-8'))[0]
 
     if myresult != refresult:
@@ -59,7 +59,7 @@ for test in test_dirs:
             data = json.load(config_file)
             bin_file = prepare_binary(test, data)
             for input_config in data['input']:
-                print('===================== Test Case ' + str(cases_total) + ' =====================')
+                print('===================== Test Case ' + str(1 + cases_total) + ' =====================')
                 print('File: ' + bin_file)
                 cases_total += 1
                 if run_test(bin_file, input_config):
