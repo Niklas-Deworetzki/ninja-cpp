@@ -45,7 +45,7 @@ namespace NJVM {
 
 
         NJVM::program = std::vector<instruction_t>(header.n_instruction);
-        NJVM::static_data = std::vector<ninja_int_t>(header.n_static_vars);
+        NJVM::static_data = std::vector<ObjRef>(header.n_static_vars); // TODO: Initialize with nullptr.
 
         if (fread(NJVM::program.data(), sizeof(instruction_t), header.n_instruction, input) != header.n_instruction) {
             throw std::invalid_argument("Failed to read program from input file.");

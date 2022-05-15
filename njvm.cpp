@@ -7,17 +7,17 @@
 #include "loader.h"
 
 namespace NJVM {
+    // Definition of NJVM constants and registers.
     const char *MESSAGE_START = "Ninja Virtual Machine started";
     const char *MESSAGE_STOP = "Ninja Virtual Machine stopped";
 
     std::vector<instruction_t> program;
-    std::vector<ninja_int_t> stack;
-    std::vector<ninja_int_t> static_data;
-    int32_t pc = 0;
-    int32_t sp = 0;
-    int32_t fp = 0;
-    ninja_int_t ret = 0;
+    std::vector<ObjRef> static_data;
+    std::vector<stack_slot> stack;
+    int32_t pc = 0, sp = 0, fp = 0;
+    ObjRef ret = nullptr;
 }
+
 
 struct cli_config {
     bool requested_version = false;
@@ -28,6 +28,7 @@ struct cli_config {
 };
 
 static cli_config parse_arguments(int argc, char *argv[]);
+
 
 int main(int argc, char *argv[]) {
     cli_config config = parse_arguments(argc, argv);
@@ -57,7 +58,7 @@ int main(int argc, char *argv[]) {
         }
 
     } else {
-        stack = std::vector<ninja_int_t>(config.stack_size);
+        stack = std::vector<stack_slot>(config.stack_size);
 
         std::cout << MESSAGE_START << std::endl;
         {
@@ -116,4 +117,12 @@ static cli_config parse_arguments(int argc, char *argv[]) {
 
     }
     return config;
+}
+
+[[nodiscard]] NJVM::ObjRef NJVM::halloc(size_t size) {
+    auto result = static_cast<NJVM::ObjRef>(malloc(size));
+    if (result == nullptr) {
+        throw std::bad_alloc();
+    }
+    return result;
 }

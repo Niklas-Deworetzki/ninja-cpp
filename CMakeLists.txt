@@ -6,5 +6,6 @@ add_compile_options(-Wall -pedantic)
 
 add_executable(njvm
         njvm.cpp
+        types.cpp
         instructions.cpp
         loader.cpp)
