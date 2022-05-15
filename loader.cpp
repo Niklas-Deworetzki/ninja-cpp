@@ -32,10 +32,7 @@ namespace NJVM {
             throw std::invalid_argument("Failed to read header from input file.");
         }
 
-        if (header.magic[0] != 'N' ||
-            header.magic[1] != 'J' ||
-            header.magic[2] != 'B' ||
-            header.magic[3] != 'F') {
+        if (strncmp(header.magic, "NJBF", 4) != 0) {
             throw std::invalid_argument("Invalid header in input file.");
         }
 
