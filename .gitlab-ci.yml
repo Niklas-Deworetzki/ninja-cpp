@@ -1,0 +1,14 @@
+image: gcc
+
+build:
+  stage: build
+  script:
+    - ./.gitlab/ci/build.sh
+  artifacts:
+    paths:
+      - njvm
+
+test:
+  stage: test
+  script:
+    - ./.gitlab/ci/test.sh
