@@ -3,10 +3,12 @@
 
 namespace NJVM {
 
+    ObjRef nil = nullptr;
+
+
     stack_slot::stack_slot() : isObjRef(false) {
         this->u.primitive = 0;
     }
-
 
     stack_slot &stack_slot::operator=(ObjRef reference) {
         this->isObjRef = true;
@@ -40,11 +42,15 @@ namespace NJVM {
     }
 
     ObjRef newPrimitiveObject(size_t byte_count) {
-        return halloc(byte_count * sizeof(unsigned char));
+        ObjRef result = halloc(byte_count * sizeof(unsigned char));
+        result->size = byte_count;
+        return result;
     }
 
     ObjRef newCompoundObject(size_t member_count) {
-        return halloc(member_count * sizeof(ObjRef));
+        ObjRef result = halloc(member_count * sizeof(ObjRef));
+        result->size = member_count;
+        return result;
     }
 }
 

@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <cstring>
 
 #include "instructions.h"
 
@@ -52,6 +53,19 @@ namespace NJVM {
             {"popr",  false},
 
             {"dup",   false},
+
+            {"new",   true},
+            {"getf",  true},
+            {"putf",  true},
+
+            {"newa",  false},
+            {"getfa", false},
+            {"putfa", false},
+            {"getsz", false},
+
+            {"pushn", false},
+            {"refeq", false},
+            {"refne", false},
     };
     static constexpr opcode_t max_opcode = (sizeof(INSTRUCTION_DATA) / sizeof(instruction_info_t)) - 1;
 
@@ -116,25 +130,48 @@ namespace NJVM {
         return stack[sp++];
     }
 
-    static ObjRef new_integer(int32_t i) {
+    template<typename numeric>
+    static ObjRef new_integer(numeric i) {
         bigFromInt(static_cast<int>(i));
         return reinterpret_cast<ObjRef>(bip.res);
     }
 
     template<void Binary()>
-    void do_arithmetic() {
+    static void do_arithmetic() {
         bip.op2 = pop().as_reference();
         bip.op1 = pop().as_reference();
         Binary();
     }
 
     template<typename Comparator>
-    bool do_comparison() {
+    static bool do_comparison() {
         bip.op2 = pop().as_reference();
         bip.op1 = pop().as_reference();
 
         Comparator cmp;
         return cmp(bigCmp(), 0);
+    }
+
+    template<typename numerical>
+    static ObjRef &get_member(ObjRef obj, numerical index) {
+        if (index < 0 || static_cast<size_t>(index) >= obj->size) {
+            std::stringstream buffer;
+            buffer << "Cannot access member #" << index << " on object of size " << obj->size << ".";
+            throw std::range_error(buffer.str());
+        }
+        return reinterpret_cast<ObjRef *>(obj->data)[index];
+    }
+
+    template<typename numerical>
+    static ObjRef create_of_size(numerical size) {
+        if (size < 0) {
+            throw std::logic_error("Cannot create object of negative size.");
+        }
+        ObjRef created = newCompoundObject(size);
+        while (size--) { // Initialize all members with nil.
+            reinterpret_cast<ObjRef *>(created->data)[size] = nil;
+        }
+        return created;
     }
 
     bool exec_instruction(instruction_t instruction) {
@@ -205,7 +242,7 @@ namespace NJVM {
                 break;
 
             case opcode_for("asf"): {
-                int32_t size = get_immediate(instruction);
+                immediate_t size = get_immediate(instruction);
                 if (size < 0) throw std::invalid_argument("Frame size can't be negative.");
                 if (static_cast<uint32_t>(sp + 1 + size) > stack.size())
                     throw std::overflow_error("Unable to allocate stack frame.");
@@ -213,7 +250,7 @@ namespace NJVM {
                 push() = fp;
                 fp = sp;
                 while (size--) { // Initialize stack frame.
-                    push() = nullptr;
+                    push() = nil;
                 }
                 break;
             }
@@ -280,7 +317,7 @@ namespace NJVM {
                 break;
 
             case opcode_for("drop"): {
-                int32_t size = get_immediate(instruction);
+                immediate_t size = get_immediate(instruction);
                 if (size < 0) throw std::invalid_argument("Frame size can't be negative.");
                 if (static_cast<uint32_t>(size) > stack.size())
                     throw std::overflow_error("Not enough elements on the stack for drop.");
@@ -301,6 +338,74 @@ namespace NJVM {
             case opcode_for("dup"): {
                 ObjRef duplicated = stack.at(sp - 1).as_reference();
                 push() = duplicated;
+                break;
+            }
+
+
+            case opcode_for("new"): {
+                push() = create_of_size(get_immediate(instruction));
+                break;
+            }
+
+            case opcode_for("getf"): {
+                ObjRef object = pop().as_reference();
+                immediate_t member = get_immediate(instruction);
+
+                push() = get_member(object, member);
+                break;
+            }
+
+            case opcode_for("putf"): {
+                ObjRef value = pop().as_reference();
+                ObjRef object = pop().as_reference();
+                immediate_t member = get_immediate(instruction);
+
+                get_member(object, member) = value;
+                break;
+            }
+
+            case opcode_for("newa"): {
+                bip.op1 = pop().as_reference();
+
+                push() = create_of_size(bigToInt());
+                break;
+            }
+
+            case opcode_for("getfa"): {
+                bip.op1 = pop().as_reference();
+                ObjRef array = pop().as_reference();
+
+                push() = get_member(array, bigToInt());
+                break;
+            }
+
+            case opcode_for("putfa"): {
+                ObjRef value = pop().as_reference();
+                bip.op1 = pop().as_reference();
+                ObjRef array = pop().as_reference();
+
+                get_member(array, bigToInt()) = value;
+                break;
+            }
+
+            case opcode_for("getsz"):
+                push() = new_integer(pop().as_reference()->size);
+                break;
+
+
+            case opcode_for("pushn"):
+                push() = nil;
+                break;
+
+            case opcode_for("refeq"): {
+                bool result = pop().as_reference() == pop().as_reference();
+                push() = result;
+                break;
+            }
+
+            case opcode_for("refne"): {
+                bool result = pop().as_reference() != pop().as_reference();
+                push() = result;
                 break;
             }
 

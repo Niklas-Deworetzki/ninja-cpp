@@ -16,6 +16,9 @@ namespace NJVM {
     };
     typedef ninja_object *ObjRef;
 
+    extern ObjRef nil;
+
+
     struct stack_slot {
         bool isObjRef;
         union {
@@ -33,7 +36,6 @@ namespace NJVM {
 
         [[nodiscard]] int32_t &as_primitive();
     };
-
 
 
     [[nodiscard]] ObjRef halloc(size_t payload_size);
