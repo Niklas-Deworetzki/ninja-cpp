@@ -2,7 +2,12 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+
 #include "instructions.h"
+
+extern "C" {
+#include "lib/bigint.h"
+}
 
 namespace NJVM {
     static constexpr instruction_info_t INSTRUCTION_DATA[] = {
@@ -112,29 +117,24 @@ namespace NJVM {
     }
 
     static ObjRef new_integer(int32_t i) {
-        ObjRef result = halloc(sizeof(ninja_int_t));
-        *result = i;
-        return result;
+        bigFromInt(static_cast<int>(i));
+        return reinterpret_cast<ObjRef>(bip.res);
     }
 
-    template<typename Binary>
+    template<void Binary()>
     void do_arithmetic() {
-        Binary op;
-
-        ObjRef rhs = pop().as_reference();
-        ObjRef lhs = pop().as_reference();
-
-        push() = new_integer(op(*lhs, *rhs));
+        bip.op2 = pop().as_reference();
+        bip.op1 = pop().as_reference();
+        Binary();
     }
 
-    template<typename Comparison>
-    void do_comparison() {
-        Comparison op;
+    template<typename Comparator>
+    bool do_comparison() {
+        bip.op2 = pop().as_reference();
+        bip.op1 = pop().as_reference();
 
-        ObjRef rhs = pop().as_reference();
-        ObjRef lhs = pop().as_reference();
-
-        push() = new_integer(op(*lhs, *rhs) ? 1 : 0);
+        Comparator cmp;
+        return cmp(bigCmp(), 0);
     }
 
     bool exec_instruction(instruction_t instruction) {
@@ -147,35 +147,40 @@ namespace NJVM {
                 break;
 
             case opcode_for("add"):
-                do_arithmetic<std::plus<ninja_int_t>>();
+                do_arithmetic<bigAdd>();
+                push() = reinterpret_cast<ObjRef>(bip.res);
                 break;
 
             case opcode_for("sub"):
-                do_arithmetic<std::minus<ninja_int_t>>();
+                do_arithmetic<bigSub>();
+                push() = reinterpret_cast<ObjRef>(bip.res);
                 break;
 
             case opcode_for("mul"):
-                do_arithmetic<std::multiplies<ninja_int_t>>();
+                do_arithmetic<bigMul>();
+                push() = reinterpret_cast<ObjRef>(bip.res);
                 break;
 
             case opcode_for("div"):
-                do_arithmetic<std::divides<ninja_int_t>>();
+                do_arithmetic<bigDiv>();
+                push() = reinterpret_cast<ObjRef>(bip.res);
                 break;
 
             case opcode_for("mod"):
-                do_arithmetic<std::modulus<ninja_int_t>>();
+                do_arithmetic<bigDiv>();
+                push() = reinterpret_cast<ObjRef>(bip.rem);
                 break;
 
 
-            case opcode_for("rdint"):  {
-                int32_t  input;
-                std::cin >> input;
-                push() = new_integer(input);
+            case opcode_for("rdint"): {
+                bigRead(stdin);
+                push() = reinterpret_cast<ObjRef>(bip.res);
                 break;
             }
 
             case opcode_for("wrint"):
-                std::cout << *pop().as_reference();
+                bip.op1 = pop().as_reference();
+                bigPrint(stdout);
                 break;
 
             case opcode_for("rdchr"): {
@@ -186,7 +191,8 @@ namespace NJVM {
             }
 
             case opcode_for("wrchr"):
-                std::cout << static_cast<char>(*pop().as_reference());
+                bip.op1 = pop().as_reference();
+                std::cout << static_cast<char>(bigToInt());
                 break;
 
 
@@ -227,27 +233,27 @@ namespace NJVM {
 
 
             case opcode_for("eq"):
-                do_comparison<std::equal_to<ninja_int_t>>();
+                push() = do_comparison<std::equal_to<int>>();
                 break;
 
             case opcode_for("ne"):
-                do_comparison<std::not_equal_to<ninja_int_t>>();
+                push() = do_comparison<std::not_equal_to<int>>();
                 break;
 
             case opcode_for("lt"):
-                do_comparison<std::less<ninja_int_t>>();
+                push() = do_comparison<std::less<int>>();
                 break;
 
             case opcode_for("le"):
-                do_comparison<std::less_equal<ninja_int_t>>();
+                push() = do_comparison<std::less_equal<int>>();
                 break;
 
             case opcode_for("gt"):
-                do_comparison<std::greater<ninja_int_t>>();
+                push() = do_comparison<std::greater<int>>();
                 break;
 
             case opcode_for("ge"):
-                do_comparison<std::greater_equal<ninja_int_t>>();
+                push() = do_comparison<std::greater_equal<int>>();
                 break;
 
 
@@ -256,11 +262,11 @@ namespace NJVM {
                 break;
 
             case opcode_for("brf"):
-                if (*pop().as_reference() == 0) pc = get_immediate(instruction);
+                if (!pop().as_primitive()) pc = get_immediate(instruction);
                 break;
 
             case opcode_for("brt"):
-                if (*pop().as_reference() == 1) pc = get_immediate(instruction);
+                if (pop().as_primitive()) pc = get_immediate(instruction);
                 break;
 
 

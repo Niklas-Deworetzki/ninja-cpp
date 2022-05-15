@@ -10,8 +10,11 @@ namespace NJVM {
     typedef uint8_t opcode_t;
     typedef int32_t immediate_t;
 
-    typedef int32_t ninja_int_t;
-    typedef ninja_int_t *ObjRef;
+    struct ninja_object {
+        size_t size;
+        unsigned char data[];
+    };
+    typedef ninja_object *ObjRef;
 
     struct stack_slot {
         bool isObjRef;

@@ -120,7 +120,7 @@ static cli_config parse_arguments(int argc, char *argv[]) {
 }
 
 [[nodiscard]] NJVM::ObjRef NJVM::halloc(size_t size) {
-    auto result = static_cast<NJVM::ObjRef>(malloc(size));
+    auto result = static_cast<NJVM::ObjRef>(malloc(size + sizeof(NJVM::ninja_object)));
     if (result == nullptr) {
         throw std::bad_alloc();
     }

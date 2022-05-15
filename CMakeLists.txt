@@ -8,4 +8,5 @@ add_executable(njvm
         njvm.cpp
         types.cpp
         instructions.cpp
-        loader.cpp)
+        loader.cpp
+        lib/bigint.c support.cpp)
