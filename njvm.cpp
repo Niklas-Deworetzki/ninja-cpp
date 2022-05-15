@@ -118,11 +118,3 @@ static cli_config parse_arguments(int argc, char *argv[]) {
     }
     return config;
 }
-
-[[nodiscard]] NJVM::ObjRef NJVM::halloc(size_t size) {
-    auto result = static_cast<NJVM::ObjRef>(malloc(size + sizeof(NJVM::ninja_object)));
-    if (result == nullptr) {
-        throw std::bad_alloc();
-    }
-    return result;
-}

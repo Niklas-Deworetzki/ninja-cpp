@@ -1,6 +1,6 @@
 
 #include <stdexcept>
-#include "njvm.h"
+#include "types.h"
 
 extern "C" {
 #include "lib/support.h"
@@ -12,9 +12,9 @@ void fatalError(char *msg) {
 }
 
 void *newPrimObject(int dataSize) {
-    return NJVM::halloc(dataSize);
+    return NJVM::newPrimitiveObject(dataSize);
 }
 
 void *getPrimObjectDataPointer(void *primObject) {
-    return reinterpret_cast<NJVM::ninja_object*>(primObject)->data;
+    return reinterpret_cast<NJVM::ninja_object *>(primObject)->data;
 }

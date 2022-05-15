@@ -18,7 +18,5 @@ namespace NJVM {
     extern int32_t pc, sp, fp;
     extern ObjRef ret;
 
-    [[nodiscard]] ObjRef halloc(size_t size);
-
 }
 

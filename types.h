@@ -34,5 +34,13 @@ namespace NJVM {
         [[nodiscard]] int32_t &as_primitive();
     };
 
+
+
+    [[nodiscard]] ObjRef halloc(size_t payload_size);
+
+    [[nodiscard]] ObjRef newPrimitiveObject(size_t byte_count);
+
+    [[nodiscard]] ObjRef newCompoundObject(size_t member_count);
+
 }
 

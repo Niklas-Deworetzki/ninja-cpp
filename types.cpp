@@ -31,5 +31,20 @@ namespace NJVM {
     }
 
 
+    [[nodiscard]] ObjRef halloc(size_t payload_size) {
+        auto result = static_cast<ObjRef>(malloc(sizeof(ninja_object) + payload_size));
+        if (result == nullptr) {
+            throw std::bad_alloc();
+        }
+        return result;
+    }
+
+    ObjRef newPrimitiveObject(size_t byte_count) {
+        return halloc(byte_count * sizeof(unsigned char));
+    }
+
+    ObjRef newCompoundObject(size_t member_count) {
+        return halloc(member_count * sizeof(ObjRef));
+    }
 }
 
