@@ -1,5 +1,6 @@
 # Ignore generated build files.
 target/
+tests/**/*.bin
 
 # Created by https://www.toptal.com/developers/gitignore/api/c,c++,clion,cmake
 # Edit at https://www.toptal.com/developers/gitignore?templates=c,c++,clion,cmake
