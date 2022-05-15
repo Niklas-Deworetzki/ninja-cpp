@@ -273,10 +273,15 @@ namespace NJVM {
                 pc = pop().as_primitive();
                 break;
 
-            case opcode_for("drop"): // TODO: Check for negative size.
-                sp -= get_immediate(instruction);
-                if (sp < 0) throw std::underflow_error("Not enough elements on the stack for drop.");
+            case opcode_for("drop"): {
+                int32_t size = get_immediate(instruction);
+                if (size < 0) throw std::invalid_argument("Frame size can't be negative.");
+                if (static_cast<uint32_t>(size) > stack.size())
+                    throw std::overflow_error("Not enough elements on the stack for drop.");
+
+                sp -= size;
                 break;
+            }
 
             case opcode_for("pushr"):
                 push() = ret;
