@@ -1,0 +1,1 @@
+./**/*.bin  # Ignore generated binary files in all sub directories.
