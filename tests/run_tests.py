@@ -24,7 +24,7 @@ def prepare_binary(test_dir, data):
     input_file = data['file']
     (name, extension) = path.splitext(input_file)
 
-    if extension == '.nja':
+    if extension.startswith('.nj'):
         exec([path.join(directory, 'njc'), '--output', path.join(context, name + '.asm'), path.join(context, input_file)])
 
     exec([path.join(directory, 'nja'), path.join(context, name + '.asm'), path.join(context, name + '.bin')])
