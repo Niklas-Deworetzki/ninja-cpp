@@ -1,7 +1,7 @@
 //
 // version
 //
-	.vers	4
+	.vers	7
 
 //
 // execution framework
@@ -78,6 +78,33 @@ _int2char:
 _exit:
 	asf	0
 	halt
+	rsf
+	ret
+
+//
+// void writeString(String)
+//
+_writeString:
+	asf	1
+	pushc	0
+	popl	0
+	jmp	_writeString_L2
+_writeString_L1:
+	pushl	-3
+	pushl	0
+	getfa
+	call	_writeCharacter
+	drop	1
+	pushl	0
+	pushc	1
+	add
+	popl	0
+_writeString_L2:
+	pushl	0
+	pushl	-3
+	getsz
+	lt
+	brt	_writeString_L1
 	rsf
 	ret
 
