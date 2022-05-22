@@ -390,9 +390,11 @@ namespace NJVM {
                 break;
             }
 
-            case opcode_for("getsz"):
-                push() = new_integer(pop().as_reference()->size);
+            case opcode_for("getsz"): {
+                size_t size = pop().as_reference()->size;
+                push() = new_integer(size);
                 break;
+            }
 
 
             case opcode_for("pushn"):
