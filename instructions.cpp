@@ -144,12 +144,12 @@ namespace NJVM {
     }
 
     template<typename Comparator>
-    static bool do_comparison() {
+    static ObjRef do_comparison() {
         bip.op2 = pop().as_reference();
         bip.op1 = pop().as_reference();
 
         Comparator cmp;
-        return cmp(bigCmp(), 0);
+        return new_integer(cmp(bigCmp(), 0));
     }
 
     template<typename numerical>
@@ -299,11 +299,13 @@ namespace NJVM {
                 break;
 
             case opcode_for("brf"):
-                if (!pop().as_primitive()) pc = get_immediate(instruction);
+                bip.op1 = pop().as_reference();
+                if (bigToInt() == 0) pc = get_immediate(instruction);
                 break;
 
             case opcode_for("brt"):
-                if (pop().as_primitive()) pc = get_immediate(instruction);
+                bip.op1 = pop().as_reference();
+                if (bigToInt() != 0) pc = get_immediate(instruction);
                 break;
 
 
@@ -399,13 +401,13 @@ namespace NJVM {
 
             case opcode_for("refeq"): {
                 bool result = pop().as_reference() == pop().as_reference();
-                push() = result;
+                push() = new_integer(result);
                 break;
             }
 
             case opcode_for("refne"): {
                 bool result = pop().as_reference() != pop().as_reference();
-                push() = result;
+                push() = new_integer(result);
                 break;
             }
 
