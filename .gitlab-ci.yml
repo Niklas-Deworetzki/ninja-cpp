@@ -1,16 +1,14 @@
-image: python:3-stretch
+image: gcc # Requires Python as well.
 
-#build:
-#  stage: build
-#  script:
-#    - ./.gitlab/ci/build.sh
-#  artifacts:
-#    paths:
-#      - njvm
+build:
+  stage: build
+  script:
+    - ./.gitlab/ci/build.sh
+  artifacts:
+    paths:
+      - njvm
 
 test:
   stage: test
-  tags:
-    - python3
   script:
     - ./.gitlab/ci/test.sh
