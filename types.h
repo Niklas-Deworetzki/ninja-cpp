@@ -10,10 +10,21 @@ namespace NJVM {
     typedef uint8_t opcode_t;
     typedef int32_t immediate_t;
 
+    extern const size_t MAXIMUM_OBJECT_SIZE;
+
     struct ninja_object {
-        size_t size;
+        uint32_t size;
         unsigned char data[];
+
+        [[nodiscard]] uint32_t get_size() const;
+
+        void mark_copied();
+
+        [[nodiscard]] bool is_copied() const;
+
+        [[nodiscard]] bool is_complex() const;
     };
+
     typedef ninja_object *ObjRef;
 
     extern ObjRef nil;
@@ -37,8 +48,6 @@ namespace NJVM {
         [[nodiscard]] int32_t &as_primitive();
     };
 
-
-    [[nodiscard]] ObjRef halloc(size_t payload_size);
 
     [[nodiscard]] ObjRef newPrimitiveObject(size_t byte_count);
 

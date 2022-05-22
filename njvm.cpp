@@ -5,6 +5,7 @@
 #include "njvm.h"
 #include "instructions.h"
 #include "loader.h"
+#include "gc.h"
 
 namespace NJVM {
     // Definition of NJVM constants and registers.
@@ -23,10 +24,8 @@ struct cli_config {
     bool requested_version = false;
     bool requested_help = false;
     bool requested_list = false;
-    bool gc_stats = false;
-    bool gc_purge = false;
     size_t stack_size_kbytes = 64;
-    size_t heap_size_kbytes = 8192;
+    NJVM::gc_config gc_config = {8192, false, false};
     char *input_file = nullptr;
 };
 
@@ -63,6 +62,7 @@ int main(int argc, char *argv[]) {
     } else {
         // Translate config number into 1024 bytes and allocate stack slots accordingly.
         stack = std::vector<stack_slot>(config.stack_size_kbytes * 1024 / sizeof(stack_slot));
+        initialize_heap(config.gc_config);
 
         std::cout << MESSAGE_START << std::endl;
         {
@@ -108,10 +108,10 @@ static cli_config parse_arguments(int argc, char *argv[]) {
                 config.requested_list = true;
 
             } else if (matches(arg, {"--gcpurge"})) {
-                config.gc_purge = true;
+                config.gc_config.gcpurge = true;
 
             } else if (matches(arg, {"--gcstats"})) {
-                config.gc_stats = true;
+                config.gc_config.gcstats = true;
 
             } else if (matches(arg, {"--stack"})) {
                 if (argc > i + 1) {
@@ -122,7 +122,7 @@ static cli_config parse_arguments(int argc, char *argv[]) {
 
             } else if (matches(arg, {"--heap"})) {
                 if (argc > i + 1) {
-                    config.heap_size_kbytes = std::stoi(argv[i + 1]);
+                    config.gc_config.heap_size_kbytes = std::stoi(argv[i + 1]);
                 } else {
                     throw std::invalid_argument("Missing argument to --heap flag.");
                 }

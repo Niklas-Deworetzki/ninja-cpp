@@ -1,9 +1,30 @@
 
 #include "types.h"
+#include "gc.h"
 
 namespace NJVM {
 
     ObjRef nil = nullptr;
+
+    const size_t MAXIMUM_OBJECT_SIZE = (1 << 30) - 1;
+    const uint32_t COMPLEX_FLAG = 1 << 31, COPIED_FLAG = 1 << 30;
+
+
+    void ninja_object::mark_copied() {
+        this->size |= COPIED_FLAG;
+    }
+
+    bool ninja_object::is_copied() const {
+        return (this->size & COPIED_FLAG) != 0;
+    }
+
+    bool ninja_object::is_complex() const {
+        return (this->size & COMPLEX_FLAG) != 0;
+    }
+
+    uint32_t ninja_object::get_size() const {
+        return this->size & ~(COMPLEX_FLAG | COPIED_FLAG);
+    }
 
 
     stack_slot::stack_slot() : isObjRef(false) {
@@ -33,14 +54,6 @@ namespace NJVM {
     }
 
 
-    [[nodiscard]] ObjRef halloc(size_t payload_size) {
-        auto result = static_cast<ObjRef>(malloc(sizeof(ninja_object) + payload_size));
-        if (result == nullptr) {
-            throw std::bad_alloc();
-        }
-        return result;
-    }
-
     ObjRef newPrimitiveObject(size_t byte_count) {
         ObjRef result = halloc(byte_count * sizeof(unsigned char));
         result->size = byte_count;
@@ -49,7 +62,7 @@ namespace NJVM {
 
     ObjRef newCompoundObject(size_t member_count) {
         ObjRef result = halloc(member_count * sizeof(ObjRef));
-        result->size = member_count;
+        result->size = member_count | COMPLEX_FLAG;
         return result;
     }
 }

@@ -154,9 +154,9 @@ namespace NJVM {
 
     template<typename numerical>
     static ObjRef &get_member(ObjRef obj, numerical index) {
-        if (index < 0 || static_cast<size_t>(index) >= obj->size) {
+        if (index < 0 || static_cast<size_t>(index) >= obj->get_size()) {
             std::stringstream buffer;
-            buffer << "Cannot access member #" << index << " on object of size " << obj->size << ".";
+            buffer << "Cannot access member #" << index << " on object of size " << obj->get_size() << ".";
             throw std::range_error(buffer.str());
         }
         return reinterpret_cast<ObjRef *>(obj->data)[index];
@@ -391,7 +391,7 @@ namespace NJVM {
             }
 
             case opcode_for("getsz"): {
-                size_t size = pop().as_reference()->size;
+                size_t size = pop().as_reference()->get_size();
                 push() = new_integer(size);
                 break;
             }
