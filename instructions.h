@@ -2,7 +2,7 @@
 #pragma once
 
 #include <cstdint>
-#include "njvm.h"
+#include "types.h"
 
 namespace NJVM {
 

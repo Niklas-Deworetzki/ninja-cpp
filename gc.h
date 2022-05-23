@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "njvm.h"
 #include "types.h"
 
 namespace NJVM {

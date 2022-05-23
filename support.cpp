@@ -2,11 +2,6 @@
 #include <stdexcept>
 #include "types.h"
 
-extern "C" {
-#include "lib/support.h"
-}
-
-
 void fatalError(char *msg) {
     throw std::logic_error(msg);
 }

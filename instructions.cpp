@@ -1,14 +1,10 @@
 
 #include <stdexcept>
-#include <sstream>
 #include <iostream>
 #include <cstring>
 
 #include "instructions.h"
-
-extern "C" {
-#include "lib/bigint.h"
-}
+#include "njvm.h"
 
 namespace NJVM {
     static constexpr instruction_info_t INSTRUCTION_DATA[] = {

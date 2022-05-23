@@ -1,6 +1,13 @@
 
 #pragma once
 
+/**
+ * Basic definitions of the Ninja Virtual Machine.
+ *
+ * This header provides version number, start & stop message and the
+ * machine components.
+ */
+
 #include <vector>
 #include <stack>
 

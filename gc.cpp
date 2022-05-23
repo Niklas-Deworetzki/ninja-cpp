@@ -1,12 +1,9 @@
 
 #include <iostream>
-#include <sstream>
 #include <cstring>
-#include "gc.h"
 
-extern "C" {
-#include "lib/bigint.h"
-}
+#include "gc.h"
+#include "njvm.h"
 
 
 namespace NJVM {
