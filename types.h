@@ -11,7 +11,6 @@ namespace NJVM {
     typedef int32_t immediate_t;
 
     extern const size_t MAXIMUM_OBJECT_SIZE;
-    extern const uint32_t COMPLEX_FLAG, COPIED_FLAG;
 
     struct ninja_object {
         uint32_t size;
@@ -19,7 +18,7 @@ namespace NJVM {
 
         [[nodiscard]] uint32_t get_size() const;
 
-        void mark_copied();
+        void mark_copied(size_t forward_reference);
 
         [[nodiscard]] bool is_copied() const;
 
@@ -53,6 +52,16 @@ namespace NJVM {
     [[nodiscard]] ObjRef newPrimitiveObject(size_t byte_count);
 
     [[nodiscard]] ObjRef newCompoundObject(size_t member_count);
+
+
+    template<typename numerical>
+    [[nodiscard]] ObjRef &get_member(ObjRef obj, numerical index);
+
+    template<typename numerical>
+    [[nodiscard]] ObjRef newNinjaObject(numerical size);
+
+    template<typename numeric>
+    [[nodiscard]] ObjRef newNinjaInteger(numeric i);
 
 }
 

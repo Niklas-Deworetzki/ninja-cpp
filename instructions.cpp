@@ -130,11 +130,6 @@ namespace NJVM {
         return stack[sp++];
     }
 
-    template<typename numeric>
-    static ObjRef new_integer(numeric i) {
-        bigFromInt(static_cast<int>(i));
-        return reinterpret_cast<ObjRef>(bip.res);
-    }
 
     template<void Binary()>
     static void do_arithmetic() {
@@ -149,29 +144,7 @@ namespace NJVM {
         bip.op1 = pop().as_reference();
 
         Comparator cmp;
-        return new_integer(cmp(bigCmp(), 0));
-    }
-
-    template<typename numerical>
-    static ObjRef &get_member(ObjRef obj, numerical index) {
-        if (index < 0 || static_cast<size_t>(index) >= obj->get_size()) {
-            std::stringstream buffer;
-            buffer << "Cannot access member #" << index << " on object of size " << obj->get_size() << ".";
-            throw std::range_error(buffer.str());
-        }
-        return reinterpret_cast<ObjRef *>(obj->data)[index];
-    }
-
-    template<typename numerical>
-    static ObjRef create_of_size(numerical size) {
-        if (size < 0) {
-            throw std::logic_error("Cannot create object of negative size.");
-        }
-        ObjRef created = newCompoundObject(size);
-        while (size--) { // Initialize all members with nil.
-            reinterpret_cast<ObjRef *>(created->data)[size] = nil;
-        }
-        return created;
+        return newNinjaInteger(cmp(bigCmp(), 0));
     }
 
     bool exec_instruction(instruction_t instruction) {
@@ -180,7 +153,7 @@ namespace NJVM {
                 return false;
 
             case opcode_for("pushc"):
-                push() = new_integer(get_immediate(instruction));
+                push() = newNinjaInteger(get_immediate(instruction));
                 break;
 
             case opcode_for("add"):
@@ -223,7 +196,7 @@ namespace NJVM {
             case opcode_for("rdchr"): {
                 int32_t input;
                 std::cin >> reinterpret_cast<char &>(input);
-                push() = new_integer(input);
+                push() = newNinjaInteger(input);
                 break;
             }
 
@@ -345,7 +318,7 @@ namespace NJVM {
 
 
             case opcode_for("new"): {
-                push() = create_of_size(get_immediate(instruction));
+                push() = newNinjaObject(get_immediate(instruction));
                 break;
             }
 
@@ -369,7 +342,7 @@ namespace NJVM {
             case opcode_for("newa"): {
                 bip.op1 = pop().as_reference();
 
-                push() = create_of_size(bigToInt());
+                push() = newNinjaObject(bigToInt());
                 break;
             }
 
@@ -392,7 +365,7 @@ namespace NJVM {
 
             case opcode_for("getsz"): {
                 size_t size = pop().as_reference()->get_size();
-                push() = new_integer(size);
+                push() = newNinjaInteger(size);
                 break;
             }
 
@@ -403,13 +376,13 @@ namespace NJVM {
 
             case opcode_for("refeq"): {
                 bool result = pop().as_reference() == pop().as_reference();
-                push() = new_integer(result);
+                push() = newNinjaInteger(result);
                 break;
             }
 
             case opcode_for("refne"): {
                 bool result = pop().as_reference() != pop().as_reference();
-                push() = new_integer(result);
+                push() = newNinjaInteger(result);
                 break;
             }
 

@@ -59,7 +59,7 @@ namespace NJVM {
             copied->size = original->size; // Copy size including flags.
 
             // Mark this as copied and place forward reference.
-            original->size = COPIED_FLAG | (reinterpret_cast<char *>(copied) - active_half);
+            original->mark_copied(reinterpret_cast<char *>(copied) - active_half);
 
             // Actually copy over data.
             if (copied->is_complex()) {

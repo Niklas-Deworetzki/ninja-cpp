@@ -1,4 +1,5 @@
 
+#include <sstream>
 #include "types.h"
 #include "gc.h"
 
@@ -14,8 +15,8 @@ namespace NJVM {
     const uint32_t COMPLEX_FLAG = 1 << 31, COPIED_FLAG = 1 << 30;
 
 
-    void ninja_object::mark_copied() {
-        this->size |= COPIED_FLAG;
+    void ninja_object::mark_copied(size_t forward_reference) {
+        this->size = COPIED_FLAG | forward_reference;
     }
 
     bool ninja_object::is_copied() const {
@@ -58,16 +59,45 @@ namespace NJVM {
     }
 
 
-    ObjRef newPrimitiveObject(size_t byte_count) {
+    [[nodiscard]] ObjRef newPrimitiveObject(size_t byte_count) {
         ObjRef result = halloc(byte_count * sizeof(unsigned char));
         result->size = byte_count;
         return result;
     }
 
-    ObjRef newCompoundObject(size_t member_count) {
+    [[nodiscard]] ObjRef newCompoundObject(size_t member_count) {
         ObjRef result = halloc(member_count * sizeof(ObjRef));
         result->size = member_count | COMPLEX_FLAG;
         return result;
+    }
+
+
+    template<typename numerical>
+    [[nodiscard]] ObjRef &get_member(ObjRef obj, numerical index) {
+        if (index < 0 || static_cast<size_t>(index) >= obj->get_size()) {
+            std::stringstream buffer;
+            buffer << "Cannot access member #" << index << " on object of size " << obj->get_size() << ".";
+            throw std::range_error(buffer.str());
+        }
+        return reinterpret_cast<ObjRef *>(obj->data)[index];
+    }
+
+    template<typename numerical>
+    [[nodiscard]] ObjRef newNinjaObject(numerical size) {
+        if (size < 0) {
+            throw std::logic_error("Cannot create object of negative size.");
+        }
+        ObjRef created = newCompoundObject(size);
+        while (size--) { // Initialize all members with nil.
+            reinterpret_cast<ObjRef *>(created->data)[size] = nil;
+        }
+        return created;
+    }
+
+    template<typename numeric>
+    [[nodiscard]] ObjRef newNinjaInteger(numeric i) {
+        bigFromInt(static_cast<int>(i));
+        return reinterpret_cast<ObjRef>(bip.res);
     }
 }
 
