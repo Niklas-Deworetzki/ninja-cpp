@@ -2,6 +2,10 @@
 #include "types.h"
 #include "gc.h"
 
+extern "C" {
+#include "lib/bigint.h"
+}
+
 namespace NJVM {
 
     ObjRef nil = nullptr;

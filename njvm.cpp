@@ -31,7 +31,6 @@ struct cli_config {
 
 static cli_config parse_arguments(int argc, char *argv[]);
 
-
 int main(int argc, char *argv[]) {
     cli_config config = parse_arguments(argc, argv);
 
@@ -72,6 +71,7 @@ int main(int argc, char *argv[]) {
                 pc++;                                // Increment pc.
             } while (exec_instruction(instruction)); // Execute instruction.
         }
+        gc();
         std::cout << MESSAGE_STOP << std::endl;
     }
 

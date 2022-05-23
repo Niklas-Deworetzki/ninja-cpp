@@ -11,6 +11,7 @@ namespace NJVM {
     typedef int32_t immediate_t;
 
     extern const size_t MAXIMUM_OBJECT_SIZE;
+    extern const uint32_t COMPLEX_FLAG, COPIED_FLAG;
 
     struct ninja_object {
         uint32_t size;
