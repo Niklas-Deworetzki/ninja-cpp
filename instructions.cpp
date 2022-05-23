@@ -128,19 +128,20 @@ namespace NJVM {
 
 
     template<void Binary()>
-    static void do_arithmetic() {
+    static void do_arithmetic(void *&result_register) {
         bip.op2 = pop().as_reference();
         bip.op1 = pop().as_reference();
         Binary();
+        push() = reinterpret_cast<ObjRef>(result_register);
     }
 
     template<typename Comparator>
-    static ObjRef do_comparison() {
+    static void do_comparison() {
         bip.op2 = pop().as_reference();
         bip.op1 = pop().as_reference();
 
         Comparator cmp;
-        return newNinjaInteger(cmp(bigCmp(), 0));
+        push() = newNinjaInteger(cmp(bigCmp(), 0));
     }
 
     bool exec_instruction(instruction_t instruction) {
@@ -153,28 +154,23 @@ namespace NJVM {
                 break;
 
             case opcode_for("add"):
-                do_arithmetic<bigAdd>();
-                push() = reinterpret_cast<ObjRef>(bip.res);
+                do_arithmetic<bigAdd>(bip.res);
                 break;
 
             case opcode_for("sub"):
-                do_arithmetic<bigSub>();
-                push() = reinterpret_cast<ObjRef>(bip.res);
+                do_arithmetic<bigSub>(bip.res);
                 break;
 
             case opcode_for("mul"):
-                do_arithmetic<bigMul>();
-                push() = reinterpret_cast<ObjRef>(bip.res);
+                do_arithmetic<bigMul>(bip.res);
                 break;
 
             case opcode_for("div"):
-                do_arithmetic<bigDiv>();
-                push() = reinterpret_cast<ObjRef>(bip.res);
+                do_arithmetic<bigDiv>(bip.res);
                 break;
 
             case opcode_for("mod"):
-                do_arithmetic<bigDiv>();
-                push() = reinterpret_cast<ObjRef>(bip.rem);
+                do_arithmetic<bigDiv>(bip.rem);
                 break;
 
 
@@ -239,27 +235,27 @@ namespace NJVM {
 
 
             case opcode_for("eq"):
-                push() = do_comparison<std::equal_to<int>>();
+                do_comparison<std::equal_to<int>>();
                 break;
 
             case opcode_for("ne"):
-                push() = do_comparison<std::not_equal_to<int>>();
+                do_comparison<std::not_equal_to<int>>();
                 break;
 
             case opcode_for("lt"):
-                push() = do_comparison<std::less<int>>();
+                do_comparison<std::less<int>>();
                 break;
 
             case opcode_for("le"):
-                push() = do_comparison<std::less_equal<int>>();
+                do_comparison<std::less_equal<int>>();
                 break;
 
             case opcode_for("gt"):
-                push() = do_comparison<std::greater<int>>();
+                do_comparison<std::greater<int>>();
                 break;
 
             case opcode_for("ge"):
-                push() = do_comparison<std::greater_equal<int>>();
+                do_comparison<std::greater_equal<int>>();
                 break;
 
 
