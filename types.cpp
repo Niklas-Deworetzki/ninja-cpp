@@ -1,11 +1,7 @@
 
-#include <sstream>
 #include "types.h"
 #include "gc.h"
 
-extern "C" {
-#include "lib/bigint.h"
-}
 
 namespace NJVM {
 
@@ -69,35 +65,6 @@ namespace NJVM {
         ObjRef result = halloc(member_count * sizeof(ObjRef));
         result->size = member_count | COMPLEX_FLAG;
         return result;
-    }
-
-
-    template<typename numerical>
-    [[nodiscard]] ObjRef &get_member(ObjRef obj, numerical index) {
-        if (index < 0 || static_cast<size_t>(index) >= obj->get_size()) {
-            std::stringstream buffer;
-            buffer << "Cannot access member #" << index << " on object of size " << obj->get_size() << ".";
-            throw std::range_error(buffer.str());
-        }
-        return reinterpret_cast<ObjRef *>(obj->data)[index];
-    }
-
-    template<typename numerical>
-    [[nodiscard]] ObjRef newNinjaObject(numerical size) {
-        if (size < 0) {
-            throw std::logic_error("Cannot create object of negative size.");
-        }
-        ObjRef created = newCompoundObject(size);
-        while (size--) { // Initialize all members with nil.
-            reinterpret_cast<ObjRef *>(created->data)[size] = nil;
-        }
-        return created;
-    }
-
-    template<typename numeric>
-    [[nodiscard]] ObjRef newNinjaInteger(numeric i) {
-        bigFromInt(static_cast<int>(i));
-        return reinterpret_cast<ObjRef>(bip.res);
     }
 }
 
