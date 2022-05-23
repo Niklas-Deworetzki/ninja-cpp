@@ -12,9 +12,11 @@ namespace NJVM {
     const char *MESSAGE_START = "Ninja Virtual Machine started";
     const char *MESSAGE_STOP = "Ninja Virtual Machine stopped";
 
+    // Leave them default-initialized for now.
     std::vector<instruction_t> program;
     std::vector<ObjRef> static_data;
     std::vector<stack_slot> stack;
+
     int32_t pc = 0, sp = 0, fp = 0;
     ObjRef ret = nullptr;
 }
@@ -24,11 +26,18 @@ struct cli_config {
     bool requested_version = false;
     bool requested_help = false;
     bool requested_list = false;
-    size_t stack_size_kbytes = 64;
-    NJVM::gc_config gc_config = {8192, false, false};
+    size_t stack_size_kbytes = NJVM::DEFAULT_STACK_SIZE;
+    NJVM::gc_config gc_config = {
+            .heap_size_kbytes = NJVM::DEFAULT_HEAP_SIZE,
+            .gcstats = false,
+            .gcpurge = false,
+    };
     char *input_file = nullptr;
 };
 
+/**
+ * Function used to parse cli parameters. Returns a populated cli_config struct.
+ */
 static cli_config parse_arguments(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
@@ -39,14 +48,36 @@ int main(int argc, char *argv[]) {
         std::cout << "No input file given!" << std::endl;
     }
 
-    if (config.requested_version || config.requested_help) {
-        std::cout << "NJVM version " << NJVM::version << " (build date " << __DATE__ << ") ";
-        std::cout << "Copyright Niklas Deworetzki" << std::endl;
+    if (config.requested_version) {
+        std::cout << "NJVM version " << NJVM::version << " (build date " << __DATE__ << ")";
     }
     if (config.requested_help) {
-        // TODO
+        std::cout << "Usage: " << argv[0] << " INPUT [FLAG...]\n";
+        std::cout << "Execute Ninja binary files in a virtual machine.\n\n";
+        std::cout << " --help\n";
+        std::cout << "              Display this help page.\n";
+        std::cout << " --version\n";
+        std::cout << "              Prints the supported binary version number. This machine\n";
+        std::cout << "              can execute binary files created by an assembler with\n";
+        std::cout << "              an equal or lower version.\n";
+        std::cout << " --list\n";
+        std::cout << "              Print a listing of the loaded program and exit. No\n";
+        std::cout << "              instructions will be executed.\n";
+        std::cout << " --stack SIZE\n";
+        std::cout << "              Sets the size of this machine's stack to SIZE kilobytes.\n";
+        std::cout << "              Default is " << NJVM::DEFAULT_STACK_SIZE << "\n";
+        std::cout << " --heap SIZE\n";
+        std::cout << "              Sets the size of this machine's heap to SIZE kilobytes.\n";
+        std::cout << "              Default is " << NJVM::DEFAULT_HEAP_SIZE << "\n";
+        std::cout << " --gcpurge\n";
+        std::cout << "              Purge memory after garbage collection. This will erase\n";
+        std::cout << "              all remains of collected objects.\n";
+        std::cout << " --gcstats\n";
+        std::cout << "              Display statistics with every garbage collection run.\n";
+        std::cout << std::endl;
     }
     if (config.requested_help || config.requested_version) {
+        std::cout << "Copyright (C) Niklas Deworetzki 2022" << std::endl;
         return 0; // Interrupt execution.
     }
 
@@ -91,7 +122,7 @@ static bool matches(const char *arg, std::initializer_list<const char *> potenti
 }
 
 static cli_config parse_arguments(int argc, char *argv[]) {
-    cli_config config{};
+    cli_config config{}; // Default-initialize config struct.
     bool encountered_separator = false;
 
     for (int i = 1 /* Skip program name */; i < argc; i++) {
