@@ -5,9 +5,6 @@
 
 namespace NJVM {
 
-    ObjRef nil = nullptr;
-
-    const size_t MAXIMUM_OBJECT_SIZE = (1 << 30) - 1;
     const uint32_t COMPLEX_FLAG = 1 << 31, COPIED_FLAG = 1 << 30;
 
 

@@ -15,8 +15,6 @@ namespace NJVM {
     typedef uint8_t opcode_t;
     typedef int32_t immediate_t;
 
-    extern const size_t MAXIMUM_OBJECT_SIZE;
-
     struct ninja_object {
         uint32_t size;
         unsigned char data[0];
@@ -30,9 +28,11 @@ namespace NJVM {
         [[nodiscard]] bool is_complex() const;
     };
 
+    constexpr size_t MAXIMUM_OBJECT_SIZE = (1 << 30) - 1;
+
     typedef ninja_object *ObjRef;
 
-    extern ObjRef nil;
+    constexpr ObjRef nil = nullptr;
 
 
     struct stack_slot {
