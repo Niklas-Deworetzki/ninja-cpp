@@ -23,7 +23,7 @@ namespace NJVM {
 
         if (input == nullptr) {
             std::stringstream ss;
-            ss << "Unable to open file: " << std::strerror(errno);
+            ss << "Unable to open file " << filename << ": " << std::strerror(errno);
             throw std::invalid_argument(ss.str());
         }
 

@@ -41,72 +41,77 @@ struct cli_config {
 static cli_config parse_arguments(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
-    cli_config config = parse_arguments(argc, argv);
+    try {
+        cli_config config = parse_arguments(argc, argv);
 
-    if (config.input_file == nullptr) {
-        config.requested_help = true; // Input file is required.
-        std::cout << "No input file given!" << std::endl;
-    }
-
-    if (config.requested_version) {
-        std::cout << "NJVM version " << NJVM::version << " (build date " << __DATE__ << ")";
-    }
-    if (config.requested_help) {
-        std::cout << "Usage: " << argv[0] << " INPUT [FLAG...]\n";
-        std::cout << "Execute Ninja binary files in a virtual machine.\n\n";
-        std::cout << " --help\n";
-        std::cout << "              Display this help page.\n";
-        std::cout << " --version\n";
-        std::cout << "              Prints the supported binary version number. This machine\n";
-        std::cout << "              can execute binary files created by an assembler with\n";
-        std::cout << "              an equal or lower version.\n";
-        std::cout << " --list\n";
-        std::cout << "              Print a listing of the loaded program and exit. No\n";
-        std::cout << "              instructions will be executed.\n";
-        std::cout << " --stack SIZE\n";
-        std::cout << "              Sets the size of this machine's stack to SIZE kilobytes.\n";
-        std::cout << "              Default is " << NJVM::DEFAULT_STACK_SIZE << "\n";
-        std::cout << " --heap SIZE\n";
-        std::cout << "              Sets the size of this machine's heap to SIZE kilobytes.\n";
-        std::cout << "              Default is " << NJVM::DEFAULT_HEAP_SIZE << "\n";
-        std::cout << " --gcpurge\n";
-        std::cout << "              Purge memory after garbage collection. This will erase\n";
-        std::cout << "              all remains of collected objects.\n";
-        std::cout << " --gcstats\n";
-        std::cout << "              Display statistics with every garbage collection run.\n";
-        std::cout << std::endl;
-    }
-    if (config.requested_help || config.requested_version) {
-        std::cout << "Copyright (C) Niklas Deworetzki 2022" << std::endl;
-        return 0; // Interrupt execution.
-    }
-
-    NJVM::load(config.input_file);
-    using namespace NJVM;
-
-    if (config.requested_list) {
-        for (const auto &instruction: program) {
-            print_instruction(instruction);
+        if (config.input_file == nullptr) {
+            config.requested_help = true; // Input file is required.
+            std::cout << "No input file given!" << std::endl;
         }
 
-    } else {
-        // Translate config number into 1024 bytes and allocate stack slots accordingly.
-        stack = std::vector<stack_slot>(config.stack_size_kbytes * 1024 / sizeof(stack_slot));
-        initialize_heap(config.gc_config);
-
-        std::cout << MESSAGE_START << std::endl;
-        {
-            instruction_t instruction;
-            do {
-                instruction = program.at(pc);        // Fetch instruction.
-                pc++;                                // Increment pc.
-            } while (exec_instruction(instruction)); // Execute instruction.
+        if (config.requested_version) {
+            std::cout << "NJVM version " << NJVM::version << " (build date " << __DATE__ << ")";
         }
-        gc();
-        std::cout << MESSAGE_STOP << std::endl;
-    }
+        if (config.requested_help) {
+            std::cout << "Usage: " << argv[0] << " INPUT [FLAG...]\n";
+            std::cout << "Execute Ninja binary files in a virtual machine.\n\n";
+            std::cout << " --help\n";
+            std::cout << "              Display this help page.\n";
+            std::cout << " --version\n";
+            std::cout << "              Prints the supported binary version number. This machine\n";
+            std::cout << "              can execute binary files created by an assembler with\n";
+            std::cout << "              an equal or lower version.\n";
+            std::cout << " --list\n";
+            std::cout << "              Print a listing of the loaded program and exit. No\n";
+            std::cout << "              instructions will be executed.\n";
+            std::cout << " --stack SIZE\n";
+            std::cout << "              Sets the size of this machine's stack to SIZE kilobytes.\n";
+            std::cout << "              Default is " << NJVM::DEFAULT_STACK_SIZE << "\n";
+            std::cout << " --heap SIZE\n";
+            std::cout << "              Sets the size of this machine's heap to SIZE kilobytes.\n";
+            std::cout << "              Default is " << NJVM::DEFAULT_HEAP_SIZE << "\n";
+            std::cout << " --gcpurge\n";
+            std::cout << "              Purge memory after garbage collection. This will erase\n";
+            std::cout << "              all remains of collected objects.\n";
+            std::cout << " --gcstats\n";
+            std::cout << "              Display statistics with every garbage collection run.\n";
+            std::cout << std::endl;
+        }
+        if (config.requested_help || config.requested_version) {
+            std::cout << "Copyright (C) Niklas Deworetzki 2022" << std::endl;
+            return 0; // Interrupt execution.
+        }
 
-    return 0;
+        NJVM::load(config.input_file);
+        using namespace NJVM; // Make NJVM namespace available for following statements.
+
+        if (config.requested_list) {
+            for (const auto &instruction: program) {
+                print_instruction(instruction);
+            }
+
+        } else {
+            // Translate config number into 1024 bytes and allocate stack slots accordingly.
+            stack = std::vector<stack_slot>(config.stack_size_kbytes * 1024 / sizeof(stack_slot));
+            initialize_heap(config.gc_config);
+
+            std::cout << MESSAGE_START << std::endl;
+            {
+                instruction_t instruction;
+                do {
+                    instruction = program.at(pc);        // Fetch instruction.
+                    pc++;                                // Increment pc.
+                } while (exec_instruction(instruction)); // Execute instruction.
+            }
+            gc(); // Perform gc at end of execution to force it on small programs.
+            std::cout << MESSAGE_STOP << std::endl;
+        }
+
+        return 0;
+    } catch (std::exception &exception) {
+        std::cerr << exception.what();
+        return 1;
+    }
 }
 
 
