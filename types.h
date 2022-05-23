@@ -19,7 +19,7 @@ namespace NJVM {
 
     struct ninja_object {
         uint32_t size;
-        unsigned char data[];
+        unsigned char data[0];
 
         [[nodiscard]] uint32_t get_size() const;
 
