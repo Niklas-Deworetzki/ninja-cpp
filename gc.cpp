@@ -64,7 +64,8 @@ namespace NJVM {
             // Actually copy over data.
             if (copied->is_complex()) {
                 for (size_t i = 0; i < copied->get_size(); i++) {
-                    rescue(reinterpret_cast<ObjRef *>(original->data)[i]);
+                    ObjRef &member = reinterpret_cast<ObjRef *>(original->data)[i];
+                    member = rescue(member);
                 }
             } else {
                 std::memcpy(copied->data, original->data, copied->get_size());
