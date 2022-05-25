@@ -45,31 +45,33 @@ namespace NJVM {
     }
 
 
-    [[nodiscard]] static ObjRef rescue(ObjRef original) {
-        if (original == nil) {
-            return nil;
-        } else if (original->is_copied()) { // Already rescued. Update reference to point to copied Object.
-            return reinterpret_cast<ObjRef>(active_half + original->get_size());
+    static void rescue(ObjRef *original) {
+        ObjRef &originalReference = *original;
+
+        if (originalReference == nil) {
+            return;
+        }
+
+        if (originalReference->is_copied()) {
+            originalReference = reinterpret_cast<ObjRef>(active_half + (*original)->get_size());
         } else {
             // Allocate a copy.
-            ObjRef copied = allocate(object_size(original->get_size(), original->is_complex()));
-            copied->size = original->size; // Copy size including flags.
+            ObjRef copied = allocate(object_size(originalReference->get_size(), originalReference->is_complex()));
+            copied->size = originalReference->size; // Copy size including flags.
 
             // Mark this as copied and place forward reference.
-            original->mark_copied(reinterpret_cast<char *>(copied) - active_half);
+            originalReference->mark_copied(reinterpret_cast<char *>(copied) - active_half);
 
             // Rescue all members, if this element stores references.
             if (copied->is_complex()) {
                 for (size_t i = 0; i < copied->get_size(); i++) {
-                    ObjRef &member = get_member(original, i);
-                    member = rescue(member);
+                    rescue(&get_member(originalReference, i));
                 }
 
             }
             // Actually copy data from original object.
-            std::memcpy(copied->data, original->data, payload_size(copied->get_size(), copied->is_complex()));
-
-            return copied;
+            std::memcpy(copied->data, originalReference->data, payload_size(copied->get_size(), copied->is_complex()));
+            originalReference = copied;
         }
     }
 
@@ -83,18 +85,18 @@ namespace NJVM {
 
         std::swap(active_half, unused_half);
 
-        bip.op1 = rescue(reinterpret_cast<ObjRef>(bip.op1));
-        bip.op2 = rescue(reinterpret_cast<ObjRef>(bip.op2));
-        bip.res = rescue(reinterpret_cast<ObjRef>(bip.res));
-        bip.rem = rescue(reinterpret_cast<ObjRef>(bip.rem));
-        ret = rescue(ret);
+        rescue(reinterpret_cast<ObjRef *>(&bip.op1));
+        rescue(reinterpret_cast<ObjRef *>(&bip.op2));
+        rescue(reinterpret_cast<ObjRef *>(&bip.res));
+        rescue(reinterpret_cast<ObjRef *>(&bip.rem));
+        rescue(&ret);
+        for (auto &entry: static_data) {
+            rescue(&entry);
+        }
         for (int32_t offset = 0; offset < sp; offset++) {
             if (stack[offset].isObjRef) {
-                stack[offset] = rescue(stack[offset].as_reference());
+                rescue(&stack[offset].as_reference());
             }
-        }
-        for (auto &entry: static_data) {
-            entry = rescue(entry);
         }
 
         if (gcstats) {
