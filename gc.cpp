@@ -23,8 +23,9 @@ namespace NJVM {
         gcstats = config.gcstats;
         gcpurge = config.gcpurge;
 
-        bytes_available = (config.heap_size_kbytes * 1024) / 2;
-        heap = static_cast<char *>(malloc(bytes_available * 2));
+        const size_t total_heap_size = config.heap_size_kbytes * 1024;
+        bytes_available = total_heap_size / 2;
+        heap = static_cast<char *>(malloc(total_heap_size));
         if (heap == nullptr) {
             throw std::bad_alloc();
         }
@@ -32,7 +33,7 @@ namespace NJVM {
         active_half = heap;
         unused_half = heap + bytes_available;
         if (gcpurge) {
-            std::memset(heap, 0, bytes_available * 2);
+            std::memset(heap, 0, total_heap_size);
         }
     }
 
