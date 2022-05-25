@@ -140,7 +140,7 @@ namespace NJVM {
         bip.op2 = pop().as_reference();
         bip.op1 = pop().as_reference();
 
-        Comparator cmp;
+        static Comparator cmp;
         push() = newNinjaInteger(cmp(bigCmp(), 0));
     }
 
