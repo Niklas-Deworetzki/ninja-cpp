@@ -356,8 +356,12 @@ namespace NJVM {
             }
 
             case opcode_for("getsz"): {
-                size_t size = pop().as_reference()->get_size();
-                push() = newNinjaInteger(size);
+                ObjRef reference = pop().as_reference();
+                if (reference != nil && reference->is_complex()) {
+                    push() = newNinjaInteger(reference->get_size());
+                } else {
+                    push() = newNinjaInteger(-1);
+                }
                 break;
             }
 
