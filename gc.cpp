@@ -60,7 +60,7 @@ namespace NJVM {
             // Rescue all members, if this element stores references.
             if (copied->is_complex()) {
                 for (size_t i = 0; i < copied->get_size(); i++) {
-                    ObjRef &member = reinterpret_cast<ObjRef *>(original->data)[i];
+                    ObjRef &member = get_member(original, i);
                     member = rescue(member);
                 }
 

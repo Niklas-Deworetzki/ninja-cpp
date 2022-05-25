@@ -68,7 +68,15 @@ namespace NJVM {
 
 
     template<typename numerical>
-    [[nodiscard]] ObjRef &get_member(ObjRef obj, numerical index) {
+    [[nodiscard]] ObjRef &get_member(ObjRef obj, numerical index) noexcept {
+        return reinterpret_cast<ObjRef *>(obj->data)[index];
+    }
+
+    template<typename numerical>
+    [[nodiscard]] ObjRef &try_access_member(ObjRef obj, numerical index) {
+        if (!obj->is_complex()) {
+            throw std::logic_error("Cannot access members of Integer object.");
+        }
         if (index < 0 || static_cast<size_t>(index) >= obj->get_size()) {
             std::stringstream buffer;
             buffer << "Cannot access member #" << index << " on object of size " << obj->get_size() << ".";
@@ -76,6 +84,7 @@ namespace NJVM {
         }
         return reinterpret_cast<ObjRef *>(obj->data)[index];
     }
+
 
     template<typename numerical>
     [[nodiscard]] ObjRef newNinjaObject(numerical size) {

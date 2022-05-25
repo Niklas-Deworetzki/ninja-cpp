@@ -318,7 +318,7 @@ namespace NJVM {
                 ObjRef object = pop().as_reference();
                 immediate_t member = get_immediate(instruction);
 
-                push() = get_member(object, member);
+                push() = try_access_member(object, member);
                 break;
             }
 
@@ -327,7 +327,7 @@ namespace NJVM {
                 ObjRef object = pop().as_reference();
                 immediate_t member = get_immediate(instruction);
 
-                get_member(object, member) = value;
+                try_access_member(object, member) = value;
                 break;
             }
 
@@ -342,7 +342,7 @@ namespace NJVM {
                 bip.op1 = pop().as_reference();
                 ObjRef array = pop().as_reference();
 
-                push() = get_member(array, bigToInt());
+                push() = try_access_member(array, bigToInt());
                 break;
             }
 
@@ -351,7 +351,7 @@ namespace NJVM {
                 bip.op1 = pop().as_reference();
                 ObjRef array = pop().as_reference();
 
-                get_member(array, bigToInt()) = value;
+                try_access_member(array, bigToInt()) = value;
                 break;
             }
 
