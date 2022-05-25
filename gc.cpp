@@ -94,6 +94,9 @@ namespace NJVM {
                 stack[offset] = rescue(stack[offset].as_reference());
             }
         }
+        for (auto &entry: static_data) {
+            entry = rescue(entry);
+        }
 
         if (gcstats) {
             std::cout << "Live objects: " << allocations << " (" << bytes_used << " bytes)."
