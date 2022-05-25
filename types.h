@@ -34,8 +34,12 @@ namespace NJVM {
 
     constexpr ObjRef nil = nullptr;
 
+    constexpr size_t payload_size(size_t member_count, bool is_complex) {
+        return member_count * (is_complex ? sizeof(ObjRef) : sizeof(unsigned char));
+    }
+
     constexpr size_t object_size(size_t member_count, bool is_complex) {
-        return sizeof(ninja_object) + member_count * (is_complex ? sizeof(ObjRef) : sizeof(unsigned char));
+        return sizeof(ninja_object) + payload_size(member_count, is_complex);
     }
 
 

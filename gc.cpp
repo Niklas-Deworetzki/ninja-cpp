@@ -63,10 +63,10 @@ namespace NJVM {
                     ObjRef &member = reinterpret_cast<ObjRef *>(original->data)[i];
                     member = rescue(member);
                 }
-                std::memcpy(copied->data, original->data, copied->get_size() * sizeof(ObjRef));
-            } else {
-                std::memcpy(copied->data, original->data, copied->get_size() * sizeof(unsigned char));
+
             }
+            // Actually copy data from original object.
+            std::memcpy(copied->data, original->data, payload_size(copied->get_size(), copied->is_complex()));
 
             return copied;
         }
