@@ -53,13 +53,13 @@ namespace NJVM {
 
 
     [[nodiscard]] ObjRef newPrimitiveObject(size_t byte_count) {
-        ObjRef result = halloc(byte_count * sizeof(unsigned char));
+        ObjRef result = halloc(object_size(byte_count, false));
         result->size = byte_count;
         return result;
     }
 
     [[nodiscard]] ObjRef newCompoundObject(size_t member_count) {
-        ObjRef result = halloc(member_count * sizeof(ObjRef));
+        ObjRef result = halloc(object_size(member_count, true));
         result->size = member_count | COMPLEX_FLAG;
         return result;
     }

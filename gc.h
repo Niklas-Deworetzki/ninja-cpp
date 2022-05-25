@@ -17,6 +17,6 @@ namespace NJVM {
 
     void gc();
 
-    [[nodiscard]] ObjRef halloc(size_t payload_size);
+    [[nodiscard]] ObjRef halloc(size_t size);
 
 }

@@ -51,23 +51,21 @@ namespace NJVM {
             return reinterpret_cast<ObjRef>(active_half + original->get_size());
         } else {
             // Allocate a copy.
-            ObjRef copied = allocate(sizeof(ninja_object) +
-                                     original->get_size() * (original->is_complex()
-                                                             ? sizeof(ObjRef)
-                                                             : sizeof(unsigned char)));
+            ObjRef copied = allocate(object_size(original->get_size(), original->is_complex()));
             copied->size = original->size; // Copy size including flags.
 
             // Mark this as copied and place forward reference.
             original->mark_copied(reinterpret_cast<char *>(copied) - active_half);
 
-            // Actually copy over data.
+            // Rescue all members, if this element stores references.
             if (copied->is_complex()) {
                 for (size_t i = 0; i < copied->get_size(); i++) {
                     ObjRef &member = reinterpret_cast<ObjRef *>(original->data)[i];
                     member = rescue(member);
                 }
+                std::memcpy(copied->data, original->data, copied->get_size() * sizeof(ObjRef));
             } else {
-                std::memcpy(copied->data, original->data, copied->get_size());
+                std::memcpy(copied->data, original->data, copied->get_size() * sizeof(unsigned char));
             }
 
             return copied;
@@ -110,24 +108,22 @@ namespace NJVM {
     }
 
 
-    [[nodiscard]] ObjRef halloc(size_t payload_size) {
-        payload_size += sizeof(ObjRef);
-
-        if (payload_size > MAXIMUM_OBJECT_SIZE) {
+    [[nodiscard]] ObjRef halloc(size_t size) {
+        if (size > MAXIMUM_OBJECT_SIZE) {
             std::stringstream ss;
-            ss << "Requested object size of " << payload_size << " exceeds size limit of "
+            ss << "Requested object size of " << size << " exceeds size limit of "
                << MAXIMUM_OBJECT_SIZE << ".";
             throw std::invalid_argument(ss.str());
         }
 
-        if (payload_size > (bytes_available - bytes_used)) {
+        if (size > (bytes_available - bytes_used)) {
             gc();
-            if (payload_size > (bytes_available - bytes_used)) {
+            if (size > (bytes_available - bytes_used)) {
                 throw std::runtime_error("Out of memory.");
             }
         }
 
-        return allocate(payload_size);
+        return allocate(size);
     }
 
 }

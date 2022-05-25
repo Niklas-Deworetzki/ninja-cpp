@@ -34,6 +34,10 @@ namespace NJVM {
 
     constexpr ObjRef nil = nullptr;
 
+    constexpr size_t object_size(size_t member_count, bool is_complex) {
+        return sizeof(ninja_object) + member_count * (is_complex ? sizeof(ObjRef) : sizeof(unsigned char));
+    }
+
 
     struct stack_slot {
         bool isObjRef;
@@ -76,7 +80,7 @@ namespace NJVM {
         }
         ObjRef created = newCompoundObject(size);
         while (size--) { // Initialize all members with nil.
-            reinterpret_cast<ObjRef *>(created->data)[size] = nil;
+            get_member(created, size) = nil;
         }
         return created;
     }
