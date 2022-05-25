@@ -51,8 +51,10 @@ namespace NJVM {
             return reinterpret_cast<ObjRef>(active_half + original->get_size());
         } else {
             // Allocate a copy.
-            ObjRef copied = allocate(original->get_size() *
-                                     (original->is_complex() ? sizeof(ObjRef) : sizeof(unsigned char)));
+            ObjRef copied = allocate(sizeof(ninja_object) +
+                                     original->get_size() * (original->is_complex()
+                                                             ? sizeof(ObjRef)
+                                                             : sizeof(unsigned char)));
             copied->size = original->size; // Copy size including flags.
 
             // Mark this as copied and place forward reference.
