@@ -11,5 +11,5 @@ void *newPrimObject(int dataSize) {
 }
 
 void *getPrimObjectDataPointer(void *primObject) {
-    return reinterpret_cast<NJVM::ninja_object *>(primObject)->data;
+    return reinterpret_cast<NJVM::ObjRef>(primObject)->data;
 }

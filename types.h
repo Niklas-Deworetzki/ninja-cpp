@@ -23,7 +23,7 @@ namespace NJVM {
 
         void mark_copied(size_t forward_reference);
 
-        [[nodiscard]] bool is_copied() const;
+        [[nodiscard]] bool is_compound() const;
 
         [[nodiscard]] bool is_complex() const;
     };
@@ -34,12 +34,12 @@ namespace NJVM {
 
     constexpr ObjRef nil = nullptr;
 
-    constexpr size_t payload_size(size_t member_count, bool is_complex) {
-        return member_count * (is_complex ? sizeof(ObjRef) : sizeof(unsigned char));
+    constexpr size_t payload_size(size_t member_count, bool is_compound) {
+        return member_count * (is_compound ? sizeof(ObjRef) : sizeof(unsigned char));
     }
 
-    constexpr size_t object_size(size_t member_count, bool is_complex) {
-        return sizeof(ninja_object) + payload_size(member_count, is_complex);
+    constexpr size_t object_size(size_t member_count, bool is_compound) {
+        return sizeof(ninja_object) + payload_size(member_count, is_compound);
     }
 
 
@@ -68,12 +68,12 @@ namespace NJVM {
 
 
     template<typename numerical>
-    [[nodiscard]] ObjRef &get_member(ObjRef obj, numerical index) noexcept {
+    [[nodiscard]] ObjRef &get_member(ObjRef obj, const numerical index) noexcept {
         return reinterpret_cast<ObjRef *>(obj->data)[index];
     }
 
     template<typename numerical>
-    [[nodiscard]] ObjRef &try_access_member(ObjRef obj, numerical index) {
+    [[nodiscard]] ObjRef &try_access_member(ObjRef obj, const numerical index) {
         if (!obj->is_complex()) {
             throw std::logic_error("Cannot access members of Integer object.");
         }
@@ -87,19 +87,21 @@ namespace NJVM {
 
 
     template<typename numerical>
-    [[nodiscard]] ObjRef newNinjaObject(numerical size) {
+    [[nodiscard]] ObjRef newNinjaObject(const numerical size) {
         if (size < 0) {
             throw std::logic_error("Cannot create object of negative size.");
         }
         ObjRef created = newCompoundObject(size);
-        while (size--) { // Initialize all members with nil.
-            get_member(created, size) = nil;
+
+        numerical index = size;
+        while (index--) { // Initialize all members with nil.
+            get_member(created, index) = nil;
         }
         return created;
     }
 
     template<typename numeric>
-    [[nodiscard]] ObjRef newNinjaInteger(numeric i) {
+    [[nodiscard]] ObjRef newNinjaInteger(const numeric i) {
         bigFromInt(static_cast<int>(i));
         return reinterpret_cast<ObjRef>(bip.res);
     }

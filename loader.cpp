@@ -14,8 +14,8 @@ namespace NJVM {
     struct NJVM_file_header {
         char magic[4];
         uint32_t version;
-        uint32_t n_instruction;
-        uint32_t n_static_vars;
+        uint32_t instruction_count;
+        uint32_t static_vars_count;
     };
 
     void load(const char *filename) {
@@ -41,10 +41,15 @@ namespace NJVM {
         }
 
 
-        NJVM::program = std::vector<instruction_t>(header.n_instruction);
-        NJVM::static_data = std::vector<ObjRef>(header.n_static_vars); // TODO: Initialize with nullptr.
+        NJVM::program = std::vector<instruction_t>(header.instruction_count);
+        NJVM::static_data = std::vector<ObjRef>(header.static_vars_count);
+        for (auto &entry: static_data) {
+            entry = nil;
+        }
 
-        if (fread(NJVM::program.data(), sizeof(instruction_t), header.n_instruction, input) != header.n_instruction) {
+
+        if (fread(NJVM::program.data(), sizeof(instruction_t), header.instruction_count, input) !=
+            header.instruction_count) {
             throw std::invalid_argument("Failed to read program from input file.");
         }
     }

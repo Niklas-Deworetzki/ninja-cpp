@@ -118,11 +118,11 @@ namespace NJVM {
     }
 
 
-    static stack_slot &pop() {
+    static inline stack_slot &pop() {
         return stack[--sp];
     }
 
-    static stack_slot &push() {
+    static inline stack_slot &push() {
         return stack[sp++];
     }
 
@@ -137,11 +137,12 @@ namespace NJVM {
 
     template<typename Comparator>
     static void do_comparison() {
+        static Comparator cmp{}; // Instantiate Comparator once for every specialization.
+
         bip.op2 = pop().as_reference();
         bip.op1 = pop().as_reference();
-
-        static Comparator cmp{}; // Instantiate Comparator once for every specialization.
-        push() = newNinjaInteger(cmp(bigCmp(), 0));
+        bool result = cmp(bigCmp(), 0);
+        push() = newNinjaInteger(result);
     }
 
     bool exec_instruction(instruction_t instruction) {
@@ -295,6 +296,7 @@ namespace NJVM {
 
             case opcode_for("pushr"):
                 push() = ret;
+                ret = nil;
                 break;
 
             case opcode_for("popr"):
@@ -315,19 +317,19 @@ namespace NJVM {
             }
 
             case opcode_for("getf"): {
-                ObjRef object = pop().as_reference();
+                ObjRef record = pop().as_reference();
                 immediate_t member = get_immediate(instruction);
 
-                push() = try_access_member(object, member);
+                push() = try_access_member(record, member);
                 break;
             }
 
             case opcode_for("putf"): {
                 ObjRef value = pop().as_reference();
-                ObjRef object = pop().as_reference();
+                ObjRef record = pop().as_reference();
                 immediate_t member = get_immediate(instruction);
 
-                try_access_member(object, member) = value;
+                try_access_member(record, member) = value;
                 break;
             }
 

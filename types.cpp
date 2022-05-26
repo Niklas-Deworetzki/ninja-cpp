@@ -12,7 +12,7 @@ namespace NJVM {
         this->size = COPIED_FLAG | forward_reference;
     }
 
-    bool ninja_object::is_copied() const {
+    bool ninja_object::is_compound() const {
         return (this->size & COPIED_FLAG) != 0;
     }
 

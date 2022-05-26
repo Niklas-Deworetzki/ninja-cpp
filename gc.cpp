@@ -52,7 +52,7 @@ namespace NJVM {
             return;
         }
 
-        if (originalReference->is_copied()) {
+        if (originalReference->is_compound()) {
             originalReference = reinterpret_cast<ObjRef>(active_half + (*original)->get_size());
         } else {
             // Allocate a copy.
