@@ -1,4 +1,8 @@
 
+/**
+ * Implementation of functions required for big-integer implementation.
+ */
+
 #include <stdexcept>
 #include "types.h"
 
@@ -7,7 +11,7 @@ void fatalError(char *msg) {
 }
 
 void *newPrimObject(int dataSize) {
-    return NJVM::newPrimitiveObject(dataSize);
+    return NJVM::allocateIntegerObject(dataSize);
 }
 
 void *getPrimObjectDataPointer(void *primObject) {

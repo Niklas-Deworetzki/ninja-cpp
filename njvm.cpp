@@ -12,13 +12,14 @@ namespace NJVM {
     const char *MESSAGE_START = "Ninja Virtual Machine started";
     const char *MESSAGE_STOP = "Ninja Virtual Machine stopped";
 
-    // Leave them default-initialized for now.
+    // Leave components default-initialized for now.
     std::vector<instruction_t> program;
     std::vector<ObjRef> static_data;
     std::vector<stack_slot> stack;
 
+    // Initialize registers.
     int32_t pc = 0, sp = 0, fp = 0;
-    ObjRef ret = nullptr;
+    ObjRef ret = nil;
 }
 
 
@@ -82,8 +83,8 @@ int main(int argc, char *argv[]) {
             return 0; // Interrupt execution.
         }
 
-        NJVM::load(config.input_file);
-        using namespace NJVM; // Make NJVM namespace available for following statements.
+        using namespace NJVM;
+        load(config.input_file); // Load program, initializing program and static_data.
 
         if (config.requested_list) {
             for (const auto &instruction: program) {
@@ -91,8 +92,9 @@ int main(int argc, char *argv[]) {
             }
 
         } else {
-            // Translate config number into 1024 bytes and allocate stack slots accordingly.
-            stack = std::vector<stack_slot>(config.stack_size_kbytes * 1024 / sizeof(stack_slot));
+            const size_t stack_slot_count = (config.stack_size_kbytes * 1024) / sizeof(stack_slot);
+            // Initialize stack and heap for execution.
+            stack = std::vector<stack_slot>(stack_slot_count);
             initialize_heap(config.gc_config);
 
             std::cout << MESSAGE_START << std::endl;
@@ -106,6 +108,11 @@ int main(int argc, char *argv[]) {
             gc(); // Perform gc at end of execution to force it on small programs.
             std::cout << MESSAGE_STOP << std::endl;
         }
+
+        // Free up memory.
+        program.clear();
+        static_data.clear();
+        free_heap();
 
         return 0;
     } catch (std::exception &exception) {

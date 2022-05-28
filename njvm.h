@@ -15,13 +15,19 @@
 
 namespace NJVM {
 
+    /**
+     * Supported binary version number.
+     */
     constexpr uint32_t version = 8;
 
-    extern const char *MESSAGE_START, *MESSAGE_STOP;
-
+    /**
+     * Default size of stack and heap in kilobytes.
+     */
     constexpr size_t DEFAULT_HEAP_SIZE = 8192,
             DEFAULT_STACK_SIZE = 64;
 
+    // Message printed when starting/stopping the machine.
+    extern const char *MESSAGE_START, *MESSAGE_STOP;
 
     // Use a vector instead of raw memory. This gives us bounds checks for free.
     extern std::vector<instruction_t> program;

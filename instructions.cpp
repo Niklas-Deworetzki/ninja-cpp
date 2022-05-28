@@ -7,6 +7,7 @@
 #include "njvm.h"
 
 namespace NJVM {
+    // Definition of every supported instruction.
     static constexpr instruction_info_t INSTRUCTION_DATA[] = {
             {"halt",  false},
 
@@ -63,6 +64,7 @@ namespace NJVM {
             {"refeq", false},
             {"refne", false},
     };
+    // Highest valid opcode. Computed at compile time.
     static constexpr opcode_t max_opcode = (sizeof(INSTRUCTION_DATA) / sizeof(instruction_info_t)) - 1;
 
 
@@ -77,11 +79,11 @@ namespace NJVM {
 
 
     [[nodiscard]] constexpr opcode_t get_opcode(instruction_t instruction) {
-        return (instruction >> 24) & 0xFF;
+        return (instruction >> 24) & 0xFF; // Opcode is encoded in the highest 8 bits.
     }
 
     [[nodiscard]] constexpr immediate_t get_immediate(instruction_t instruction) {
-        auto intermediate = static_cast<immediate_t>(instruction & 0x00FFFFFF);
+        auto intermediate = static_cast<immediate_t>(instruction & 0x00FFFFFF); // Operand is encoded in lowest 24 bits.
         if (intermediate & 0x00800000) {
             // If original immediate was negative, fill remaining bits to extend sign.
             intermediate |= (0xFF << 24);
@@ -90,7 +92,7 @@ namespace NJVM {
     }
 
 
-    // constexpr function to check if two strings are equal.
+    // constexpr function to check if two C-strings are equal at compile time.
     static constexpr bool strequals(const char *s1, const char *s2) {
         for (size_t offset = 0; s1[offset] == s2[offset]; offset++) {
             if (s1[offset] == '\0') return true;
@@ -117,16 +119,31 @@ namespace NJVM {
         std::cout << std::endl;
     }
 
+    //-----------------------------------------------------------------------
+    // Implementation of instruction execution.
+    //-----------------------------------------------------------------------
 
-    static inline stack_slot &pop() {
-        return stack[--sp];
-    }
+    // push and pop use vector implementation for automatic bounds checks.
 
     static inline stack_slot &push() {
-        return stack[sp++];
+        return stack.at(sp++);
+    }
+
+    static inline stack_slot &pop() {
+        return stack.at(--sp);
     }
 
 
+    /**
+     * Generic function to perform a binary arithmetic operation
+     * using big-integer arguments from stack. Two integers are
+     * consumed from the stack and the result of the operation
+     * is placed onto it.
+     *
+     * The template parameter is the function implementing the
+     * binary operation. The function parameter is a reference
+     * to the bip-register holding the result of the operation.
+     */
     template<void Binary()>
     static void do_arithmetic(void *&result_register) {
         bip.op2 = pop().as_reference();
@@ -135,6 +152,19 @@ namespace NJVM {
         push() = reinterpret_cast<ObjRef>(result_register);
     }
 
+    /**
+     * Generic function to perform a binary comparison using
+     * big-integer arguments from stack. Two integers are
+     * consumed from the stack and compared using bigCmp().
+     * The result of this comparison is turned into a boolean
+     * value using the given Comparator.
+     *
+     * The template parameter for this function is a so-called
+     * "Functor", a struct with an apply-method that is used
+     * to convert the comparison result into a boolean value.
+     * A single instance of the Comparator is initialized
+     * for every specialization of this template function.
+     */
     template<typename Comparator>
     static void do_comparison() {
         static Comparator cmp{}; // Instantiate Comparator once for every specialization.
@@ -210,8 +240,6 @@ namespace NJVM {
             case opcode_for("asf"): {
                 immediate_t size = get_immediate(instruction);
                 if (size < 0) throw std::invalid_argument("Frame size can't be negative.");
-                if (static_cast<uint32_t>(sp + 1 + size) > stack.size())
-                    throw std::overflow_error("Unable to allocate stack frame.");
 
                 push() = fp;
                 fp = sp;
@@ -359,7 +387,7 @@ namespace NJVM {
 
             case opcode_for("getsz"): {
                 ObjRef reference = pop().as_reference();
-                if (reference != nil && reference->is_complex()) {
+                if (reference != nil && reference->is_compound()) {
                     push() = newNinjaInteger(reference->get_size());
                 } else {
                     push() = newNinjaInteger(-1);
