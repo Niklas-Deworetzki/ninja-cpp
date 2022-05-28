@@ -28,7 +28,8 @@ namespace NJVM {
         [[nodiscard]] bool is_complex() const;
     };
 
-    constexpr size_t MAXIMUM_OBJECT_SIZE = (1 << 30) - 1;
+    constexpr size_t MAXIMUM_OBJECT_SIZE = (UINT32_MAX >> 2) - 1;
+    constexpr size_t MAXIMUM_HEAP_HALF_SIZE = (UINT32_MAX >> 2) - 1;
 
     typedef ninja_object *ObjRef;
 

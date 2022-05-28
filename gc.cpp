@@ -24,6 +24,13 @@ namespace NJVM {
         gcpurge = config.gcpurge;
 
         const size_t total_heap_size = config.heap_size_kbytes * 1024;
+        if (total_heap_size > 2 * MAXIMUM_HEAP_HALF_SIZE) {
+            std::stringstream ss;
+            ss << "Requested heap size of " << total_heap_size << " bytes"
+               << " exceeds limit of " << (2 * MAXIMUM_HEAP_HALF_SIZE) << " bytes.";
+            throw std::logic_error(ss.str());
+        }
+
         bytes_available = total_heap_size / 2;
         heap = static_cast<char *>(malloc(total_heap_size));
         if (heap == nullptr) {
@@ -77,7 +84,7 @@ namespace NJVM {
 
     void gc() {
         if (gcstats) {
-            std::cout << "Allocated since last gc: " << allocations << " objects (" << bytes_used << " bytes)."
+            std::cerr << "Allocated since last gc: " << allocations << " objects (" << bytes_used << " bytes)."
                       << std::endl;
         }
         bytes_used = 0;
@@ -100,9 +107,9 @@ namespace NJVM {
         }
 
         if (gcstats) {
-            std::cout << "Live objects: " << allocations << " (" << bytes_used << " bytes)."
+            std::cerr << "Live objects: " << allocations << " (" << bytes_used << " bytes)."
                       << std::endl;
-            std::cout << (bytes_available - bytes_used) << " bytes are available for use."
+            std::cerr << (bytes_available - bytes_used) << " bytes are available for use."
                       << std::endl;
         }
         if (gcpurge) {
@@ -128,5 +135,4 @@ namespace NJVM {
 
         return allocate(size);
     }
-
 }
