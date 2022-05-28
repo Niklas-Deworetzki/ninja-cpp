@@ -151,14 +151,16 @@ static cli_config parse_arguments(int argc, char *argv[]) {
 
             } else if (matches(arg, {"--stack"})) {
                 if (argc > i + 1) {
-                    config.stack_size_kbytes = std::stoi(argv[i + 1]);
+                    config.stack_size_kbytes = std::stoul(argv[i + 1]);
+                    i++;
                 } else {
                     throw std::invalid_argument("Missing argument to --stack flag.");
                 }
 
             } else if (matches(arg, {"--heap"})) {
                 if (argc > i + 1) {
-                    config.gc_config.heap_size_kbytes = std::stoi(argv[i + 1]);
+                    config.gc_config.heap_size_kbytes = std::stoul(argv[i + 1]);
+                    i++;
                 } else {
                     throw std::invalid_argument("Missing argument to --heap flag.");
                 }
